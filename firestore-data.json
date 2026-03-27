@@ -1,0 +1,52 @@
+{
+  "courses": [
+    {
+      "id": "course-1",
+      "title": "Introduction to React",
+      "lessons": [
+        { "id": "lesson-1", "title": "What is React?" },
+        { "id": "lesson-2", "title": "Setting up your environment" },
+        { "id": "lesson-3", "title": "JSX Basics" },
+        { "id": "lesson-4", "title": "Components and Props" },
+        { "id": "lesson-5", "title": "State and Lifecycle" }
+      ]
+    },
+    {
+      "id": "course-2",
+      "title": "Firebase Fundamentals",
+      "lessons": [
+        { "id": "lesson-1", "title": "Firebase Overview" },
+        { "id": "lesson-2", "title": "Authentication" },
+        { "id": "lesson-3", "title": "Cloud Firestore" },
+        { "id": "lesson-4", "title": "Security Rules" }
+      ]
+    },
+    {
+      "id": "course-3",
+      "title": "Tailwind CSS Mastery",
+      "lessons": [
+        { "id": "lesson-1", "title": "Utility First CSS" },
+        { "id": "lesson-2", "title": "Responsive Design" },
+        { "id": "lesson-3", "title": "Flexbox and Grid" },
+        { "id": "lesson-4", "title": "Custom Components" },
+        { "id": "lesson-5", "title": "Dark Mode" },
+        { "id": "lesson-6", "title": "Animations" }
+      ]
+    },
+    {
+      "id": "course-4",
+      "title": "JavaScript Essentials",
+      "lessons": [
+        { "id": "lesson-1", "title": "Variables and Data Types" },
+        { "id": "lesson-2", "title": "Functions and Scope" },
+        { "id": "lesson-3", "title": "Arrays and Objects" },
+        { "id": "lesson-4", "title": "Async/Await" },
+        { "id": "lesson-5", "title": "ES6+ Features" },
+        { "id": "lesson-6", "title": "Error Handling" },
+        { "id": "lesson-7", "title": "Modules and Imports" }
+      ]
+    }
+  ],
+  "users": [],
+  "progress": []
+}
