@@ -35,17 +35,17 @@ const CourseAnalyticsTable = ({ courses }) => {
             ) : (
               courses.map((course) => (
                 <tr key={course.id} className="hover:bg-gray-700 transition">
-                  <td className="px-6 py-4 text-white">{course.courseName}</td>
-                  <td className="px-6 py-4 text-gray-300">{course.instructor}</td>
+                  <td className="px-6 py-4 text-white">{course.courseName || course.title || 'Untitled'}</td>
+                  <td className="px-6 py-4 text-gray-300">{course.instructor || 'N/A'}</td>
                   <td className="px-6 py-4 text-white">
-                    {course.pricingType === 'free' ? (
-                      <span className="text-green-400">Free</span>
-                    ) : (
+                    {course.pricingType === 'paid' && course.price ? (
                       formatCurrency(course.price)
+                    ) : (
+                      <span className="text-green-400">Free</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-white">{course.totalEnrolled}</td>
-                  <td className="px-6 py-4 text-green-400">{formatCurrency(course.totalRevenue)}</td>
+                  <td className="px-6 py-4 text-white">{course.totalEnrolled || 0}</td>
+                  <td className="px-6 py-4 text-green-400">{formatCurrency(course.totalRevenue || 0)}</td>
                 </tr>
               ))
             )}

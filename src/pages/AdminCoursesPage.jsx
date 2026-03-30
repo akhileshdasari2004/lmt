@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../components/admin/AdminSidebar';
-import { getAllCoursesForAdmin, deleteCourseAdmin, searchCourses } from '../services/adminService';
-import { uploadFile, deleteFile } from '../services/storageService';
+import { getAllCoursesAdmin, deleteCourse } from '../services/adminCourseService';
 
 /**
  * Admin Courses Page
@@ -14,38 +13,28 @@ const AdminCourses = () => {
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editingCourse, setEditingCourse] = useState(null);
   const [notification, setNotification] = useState(null);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    courseName: '',
-    instructor: '',
-    category: '',
-    rating: 0,
-    pricingType: 'free',
-    price: 0,
-    imageFile: null,
-    lectures: [],
-  });
+  const [error, setError] = useState(null);
 
   // Fetch courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await getAllCoursesForAdmin();
+        setLoading(true);
+        setError(null);
+        const data = await getAllCoursesAdmin();
         setCourses(data);
         setFilteredCourses(data);
+        console.log('Courses loaded:', data);
       } catch (error) {
-        showNotification('Error fetching courses', 'error');
+        console.error('Error fetching courses:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchCourses();
-  }, []);
+  }, []);;
 
   // Handle search
   useEffect(() => {
@@ -63,50 +52,19 @@ const AdminCourses = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleFormChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    if (name === 'imageFile') {
-      setFormData((prev) => ({ ...prev, imageFile: files[0] }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value,
-      }));
-    }
-  };
-
-  const handleDeleteCourse = async (courseId, imageUrl) => {
+  const handleDeleteCourse = async (courseId) => {
     if (!window.confirm('Are you sure you want to delete this course?')) return;
 
     try {
       setLoading(true);
-      const result = await deleteCourseAdmin(courseId, imageUrl);
-      if (result.success) {
-        setCourses((prev) => prev.filter((c) => c.id !== courseId));
-        showNotification('Course deleted successfully');
-      } else {
-        showNotification('Error deleting course', 'error');
-      }
+      await deleteCourse(courseId);
+      setCourses((prev) => prev.filter((c) => c.id !== courseId));
+      showNotification('Course deleted successfully');
     } catch (error) {
+      console.error('Error deleting course:', error);
       showNotification('Error deleting course', 'error');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.courseName.trim()) {
-      showNotification('Course name is required', 'error');
-      return;
-    }
-
-    // Navigate to enhanced course form if adding/editing
-    if (editingCourse) {
-      navigate(`/admin/courses/edit/${editingCourse.id}`, { state: { course: editingCourse } });
-    } else {
-      navigate('/admin/courses/new');
     }
   };
 
