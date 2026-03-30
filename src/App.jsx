@@ -117,16 +117,19 @@ function App() {
             <Route path="/admin/signup" element={<AdminPublicRoute><AdminSignup /></AdminPublicRoute>} />
             
             <Route element={<AdminProtectedRoute><AdminProtectedLayout /></AdminProtectedRoute>}>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/management" element={<AdminManagement />} />
-              <Route path="/admin/courses/:id" element={<CourseManage />} />
+              {/* New Admin Panel - Main Dashboard */}
+              <Route path="/admin" element={<AdminDashboardNew />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardNew />} />
               
               {/* New Admin Panel Routes */}
-              <Route path="/admin/dashboard" element={<AdminDashboardNew />} />
               <Route path="/admin/courses" element={<AdminCoursesPage />} />
               <Route path="/admin/courses/new" element={<AdminCourseForm />} />
               <Route path="/admin/courses/edit/:courseId" element={<AdminCourseForm />} />
               <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+              
+              {/* Legacy routes for backward compatibility */}
+              <Route path="/admin/management" element={<AdminManagement />} />
+              <Route path="/admin/courses/:id" element={<CourseManage />} />
             </Route>
 
             {/* Fallback */}
