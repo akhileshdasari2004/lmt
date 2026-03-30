@@ -40,21 +40,28 @@ export const AdminAuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
+      console.log('Auth state changed:', { firebaseUser: firebaseUser?.uid, email: firebaseUser?.email });
+      
       if (firebaseUser) {
         // Try cache first for instant response
         let role = getCachedRole(firebaseUser.uid);
+        console.log('Cached role:', role);
         
         try {
           // Fetch role in background if not cached
           if (!role) {
+            console.log('Fetching role from Firestore for user:', firebaseUser.uid);
             role = await getUserRole(firebaseUser.uid);
+            console.log('Role from Firestore:', role);
             setCachedRole(firebaseUser.uid, role);
           }
           
           if (role === 'admin') {
+            console.log('✅ Admin role confirmed');
             setUser(firebaseUser);
             setIsAdmin(true);
           } else {
+            console.log('❌ User is not admin, role:', role);
             setUser(null);
             setIsAdmin(false);
           }
@@ -64,6 +71,7 @@ export const AdminAuthProvider = ({ children }) => {
           setIsAdmin(false);
         }
       } else {
+        console.log('No user logged in');
         setUser(null);
         setIsAdmin(false);
       }

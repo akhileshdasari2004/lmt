@@ -10,21 +10,65 @@ import {
 
 // User operations
 export const createUser = async (userId, userData, role = "student") => {
-  await setDoc(doc(db, "users", userId), { ...userData, role });
+  console.log("createUser called:", { userId, userData, role });
+  try {
+    const userDoc = { ...userData, role };
+    console.log("Creating user document:", userDoc);
+    await setDoc(doc(db, "users", userId), userDoc);
+    console.log("✅ User document created successfully");
+  } catch (err) {
+    console.error("❌ Error creating user:", err);
+    throw err;
+  }
 };
 
 export const getUser = async (userId) => {
-  const docSnap = await getDoc(doc(db, "users", userId));
-  return docSnap.exists() ? docSnap.data() : null;
+  console.log("getUser called for:", userId);
+  try {
+    const docSnap = await getDoc(doc(db, "users", userId));
+    console.log("User doc exists:", docSnap.exists());
+    console.log("User doc data:", docSnap.data());
+    return docSnap.exists() ? docSnap.data() : null;
+  } catch (err) {
+    console.error("Error getting user:", err);
+    throw err;
+  }
 };
 
 export const setUserRole = async (userId, role) => {
-  await updateDoc(doc(db, "users", userId), { role });
+  console.log(`setUserRole called: userId=${userId}, role=${role}`);
+  try {
+    await updateDoc(doc(db, "users", userId), { role });
+    console.log(`✅ User role updated to ${role}`);
+  } catch (err) {
+    console.error("Error setting user role:", err);
+    throw err;
+  }
+};
+
+export const getAllUsers = async () => {
+  console.log("getAllUsers called");
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    const users = querySnapshot.docs.map((doc) => ({
+      uid: doc.id,
+      ...doc.data(),
+    }));
+    console.log("Users fetched:", users);
+    return users;
+  } catch (err) {
+    console.error("Error fetching all users:", err);
+    throw err;
+  }
 };
 
 export const getUserRole = async (userId) => {
+  console.log("getUserRole called for:", userId);
   const user = await getUser(userId);
-  return user?.role || "student";
+  console.log("User data:", user);
+  const role = user?.role || "student";
+  console.log("Determined role:", role);
+  return role;
 };
 
 // Course operations

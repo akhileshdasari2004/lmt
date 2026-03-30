@@ -25,8 +25,9 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
-    // Users collection - users can only read/write their own document
+    // Users collection
     match /users/{userId} {
+      // Users can always read/write their own document
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }

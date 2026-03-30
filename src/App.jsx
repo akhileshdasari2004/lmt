@@ -4,10 +4,15 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { AdminAuthProvider, useAdminAuth } from './hooks/useAdminAuth';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
+import AdminSignup from './pages/AdminSignup';
+import AdminSetup from './pages/AdminSetup';
+import QuickAdminSetup from './pages/QuickAdminSetup';
+import GrantAdminAccess from './pages/GrantAdminAccess';
 import Dashboard from './pages/Dashboard';
 import Course from './pages/Course';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminManagement from './pages/AdminManagement';
 import CourseManage from './pages/CourseManage';
 import Navbar from './components/Navbar';
 import AdminNavbar from './components/admin/AdminNavbar';
@@ -101,10 +106,15 @@ function App() {
             </Route>
 
             {/* ===== ADMIN ROUTES ===== */}
+            <Route path="/admin/setup" element={<AdminSetup />} />
+            <Route path="/admin/quick-setup" element={<QuickAdminSetup />} />
+            <Route path="/admin/grant-access" element={<GrantAdminAccess />} />
             <Route path="/admin/login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
+            <Route path="/admin/signup" element={<AdminPublicRoute><AdminSignup /></AdminPublicRoute>} />
             
             <Route element={<AdminProtectedRoute><AdminProtectedLayout /></AdminProtectedRoute>}>
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/courses/:id" element={<CourseManage />} />
             </Route>
 

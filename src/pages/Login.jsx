@@ -68,10 +68,12 @@ const Login = () => {
                 </label>
                 <input
                   id="name"
+                  name="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required={isSignUp}
+                  autocomplete="name"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your name"
                 />
@@ -84,10 +86,12 @@ const Login = () => {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autocomplete="email"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="you@example.com"
               />
@@ -99,11 +103,13 @@ const Login = () => {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                autocomplete="current-password"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="••••••"
               />
@@ -125,6 +131,25 @@ const Login = () => {
             )}
           </button>
         </form>
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <p className="text-center text-sm text-gray-600">
+            Are you an admin?{' '}
+            <Link
+              to="/admin/signup"
+              className="text-red-600 hover:text-red-500 font-medium"
+            >
+              Admin Signup
+            </Link>
+            {' '}/{' '}
+            <Link
+              to="/admin/login"
+              className="text-red-600 hover:text-red-500 font-medium"
+            >
+              Admin Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

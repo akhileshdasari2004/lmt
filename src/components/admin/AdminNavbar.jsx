@@ -24,11 +24,27 @@ const AdminNavbar = () => {
     <nav className="bg-gray-900 shadow-lg border-b border-red-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Left side - Admin title */}
-          <div className="flex-shrink-0">
+          {/* Left side - Admin title and menu */}
+          <div className="flex items-center gap-8">
             <Link to="/admin" className="text-xl font-bold text-red-500">
               Admin Dashboard
             </Link>
+            
+            {/* Admin Menu Links */}
+            <div className="hidden md:flex gap-6">
+              <Link 
+                to="/admin" 
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+              >
+                Courses
+              </Link>
+              <Link 
+                to="/admin/management" 
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+              >
+                Users & Roles
+              </Link>
+            </div>
           </div>
 
           {/* Right side - User info */}
