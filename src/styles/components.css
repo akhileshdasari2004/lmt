@@ -1,0 +1,92 @@
+/* ============================================================================
+   LMT Component Styles
+   Semantic CSS classes for reusable components
+   ============================================================================ */
+
+/* ============================================================================
+   Course Card Component
+   ============================================================================ */
+
+.course-card {
+  @apply block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200;
+}
+
+.course-card-title {
+  @apply text-xl font-bold text-gray-900 mb-2;
+}
+
+.course-card-info {
+  @apply flex items-center justify-between text-sm text-gray-600 mb-4;
+}
+
+.course-card-progress-label {
+  @apply font-medium text-blue-600;
+}
+
+.course-card-progress-bar {
+  @apply w-full bg-gray-200 rounded-full h-2.5;
+}
+
+.course-card-progress-fill {
+  @apply bg-blue-600 h-2.5 rounded-full transition-all duration-300;
+}
+
+/* ============================================================================
+   Lesson Item Component
+   ============================================================================ */
+
+.lesson-item {
+  @apply flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors;
+}
+
+.lesson-item-checkbox-wrapper {
+  @apply relative;
+}
+
+.lesson-item-checkbox {
+  @apply w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer disabled:opacity-50;
+}
+
+.lesson-item-loading-spinner {
+  @apply absolute inset-0 flex items-center justify-center;
+}
+
+.lesson-item-spinner {
+  @apply w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin;
+}
+
+.lesson-item-title {
+  @apply flex-1 text-sm font-medium text-gray-900;
+}
+
+.lesson-item-title-completed {
+  @apply line-through text-gray-400;
+}
+
+/* ============================================================================
+   Progress Bar Component
+   ============================================================================ */
+
+.progress-bar-container {
+  @apply w-full bg-gray-300 rounded-full h-3;
+}
+
+.progress-bar-fill {
+  @apply bg-blue-600 h-3 rounded-full transition-all duration-300;
+}
+
+.progress-bar-label {
+  @apply text-right text-sm font-medium text-blue-600 mt-2;
+}
+
+/* ============================================================================
+   Utility Classes
+   ============================================================================ */
+
+.spinner {
+  @apply w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin;
+}
+
+.spinner-small {
+  @apply w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin;
+}

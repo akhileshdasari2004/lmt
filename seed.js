@@ -1,88 +1,258 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+#!/usr/bin/env node
 
-// Firebase config from .env
-const firebaseConfig = {
-  apiKey: "AIzaSyAHx_l6vPR-BN4i4YjVOqOOWcTtEpTiLwk",
-  authDomain: "lmt1-7d997.firebaseapp.com",
-  projectId: "lmt1-7d997",
-  storageBucket: "lmt1-7d997.firebasestorage.app",
-  messagingSenderId: "55016150672",
-  appId: "1:55016150672:web:b406ca9888cc4fc53eea15"
-};
+/**
+ * Database Seed Script
+ *
+ * Usage:
+ *   node seed.js          - Seed courses and users
+ *   node seed.js --reset  - DELETE ALL DATA, then reseed (use with caution!)
+ */
 
-const app = initializeApp(firebaseConfig);
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const path = require("path");
+
+// Check for service account key
+const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+let serviceAccount;
+
+try {
+  serviceAccount = require(serviceAccountPath);
+} catch (err) {
+  console.error("❌ Error: serviceAccountKey.json not found in project root\n");
+  console.error("To set up seeding:");
+  console.error(
+    "1. Go to Firebase Console → Project Settings → Service Accounts",
+  );
+  console.error("2. Click 'Generate New Private Key'");
+  console.error("3. Save as serviceAccountKey.json\n");
+  process.exit(1);
+}
+
+const app = initializeApp({
+  credential: cert(serviceAccount),
+});
+
 const db = getFirestore(app);
 
-const courses = [
+// ============================================================================
+// SEED DATA
+// ============================================================================
+
+const USERS = [
+  {
+    uid: "admin1",
+    email: "admin@example.com",
+    name: "Jane Admin",
+    role: "admin",
+  },
+  {
+    uid: "student1",
+    email: "student@example.com",
+    name: "John Student",
+    role: "student",
+  },
+];
+
+const COURSES = [
   {
     id: "course1",
     title: "Introduction to JavaScript",
     description: "Learn the fundamentals of JavaScript programming",
     lessons: [
-      { title: "Variables and Data Types", content: "Learn about const, let, var and different data types in JavaScript" },
-      { title: "Functions and Scope", content: "Understanding function declarations, expressions, and lexical scope" },
-      { title: "DOM Manipulation", content: "How to select and modify HTML elements with JavaScript" },
-      { title: "Events and Callbacks", content: "Event handling and callback functions in JavaScript" }
-    ]
+      {
+        title: "Variables and Data Types",
+        description:
+          "Learn about const, let, var and different data types in JavaScript",
+      },
+      {
+        title: "Functions and Scope",
+        description:
+          "Understanding function declarations, expressions, and lexical scope",
+      },
+      {
+        title: "DOM Manipulation",
+        description: "How to select and modify HTML elements with JavaScript",
+      },
+    ],
   },
   {
     id: "course2",
     title: "React Fundamentals",
     description: "Master the basics of React framework",
     lessons: [
-      { title: "JSX and Components", content: "Understanding JSX syntax and React components" },
-      { title: "Props and State", content: "Learn how to pass data with props and manage state" },
-      { title: "useEffect Hook", content: "Side effects and lifecycle management with useEffect" },
-      { title: "React Router", content: "Client-side routing with React Router" },
-      { title: "Context API", content: "State management with React Context API" }
-    ]
+      {
+        title: "Components and JSX",
+        description: "Understanding JSX syntax and React components",
+      },
+      {
+        title: "Props and State",
+        description: "Learn how to pass data with props and manage state",
+      },
+      {
+        title: "useEffect Hook",
+        description: "Side effects and lifecycle management with useEffect",
+      },
+      {
+        title: "Context API",
+        description: "State management with React Context API",
+      },
+    ],
   },
   {
     id: "course3",
     title: "Firebase for Beginners",
     description: "Get started with Firebase services",
     lessons: [
-      { title: "Firebase Setup", content: "How to set up a Firebase project and configure your app" },
-      { title: "Firestore Basics", content: "Understanding Firestore database structure and queries" },
-      { title: "Firebase Authentication", content: "Implement user authentication with Firebase Auth" }
-    ]
-  }
+      {
+        title: "Firebase Setup",
+        description: "How to set up a Firebase project and configure your app",
+      },
+      {
+        title: "Firestore Basics",
+        description: "Understanding Firestore database structure and queries",
+      },
+      {
+        title: "Firebase Authentication",
+        description: "Implement user authentication with Firebase Auth",
+      },
+    ],
+  },
 ];
 
-async function seed() {
-  console.log("Seeding courses with subcollection structure...\n");
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
 
-  for (const course of courses) {
-    const { id, lessons, ...courseData } = course;
+async function deleteAllData() {
+  console.log("🗑️  Deleting all data...\n");
 
-    // Create course document
-    await setDoc(doc(db, "courses", id), {
-      ...courseData,
-      lessonCount: lessons.length,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    console.log(`✅ Created course: ${courseData.title}`);
-
-    // Create lessons as subcollection
-    const lessonsRef = collection(db, "courses", id, "lessons");
-    for (let i = 0; i < lessons.length; i++) {
-      await addDoc(lessonsRef, {
-        ...lessons[i],
-        order: i,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
+  // Delete all users
+  const usersSnap = await db.collection("users").get();
+  for (const doc of usersSnap.docs) {
+    const sub = await db
+      .collection("users")
+      .doc(doc.id)
+      .collection("progress")
+      .get();
+    for (const subDoc of sub.docs) {
+      await subDoc.ref.delete();
     }
-    console.log(`   📚 Added ${lessons.length} lessons`);
+    await doc.ref.delete();
   }
+  console.log(`   ✓ Deleted users and progress subcollections`);
 
-  console.log("\n🎉 All courses and lessons seeded!");
-  console.log("\nNext steps:");
-  console.log("1. Update Firestore security rules (see FIRESTORE_RULES.md)");
-  console.log("2. Refresh your app to see the courses");
-  process.exit(0);
+  // Delete all courses
+  const coursesSnap = await db.collection("courses").get();
+  for (const doc of coursesSnap.docs) {
+    const lessonsSnap = await db
+      .collection("courses")
+      .doc(doc.id)
+      .collection("lessons")
+      .get();
+    for (const lessonDoc of lessonsSnap.docs) {
+      await lessonDoc.ref.delete();
+    }
+    await doc.ref.delete();
+  }
+  console.log(`   ✓ Deleted courses and lessons subcollections\n`);
 }
 
-seed().catch(console.error);
+async function seedUsers() {
+  console.log("👥 Seeding users...\n");
+
+  for (const user of USERS) {
+    try {
+      await db.collection("users").doc(user.uid).set({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        photoURL: "",
+        createdAt: new Date(),
+      });
+      console.log(`   ✓ ${user.email} (${user.role})`);
+    } catch (err) {
+      console.error(`   ✗ Failed to create ${user.email}:`, err.message);
+    }
+  }
+
+  console.log();
+}
+
+async function seedCourses() {
+  console.log("📚 Seeding courses...\n");
+
+  for (const course of COURSES) {
+    try {
+      // Create course document
+      await db.collection("courses").doc(course.id).set({
+        title: course.title,
+        description: course.description,
+        lessonCount: course.lessons.length,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      console.log(`   ✓ ${course.title} (${course.lessons.length} lessons)`);
+
+      // Create lessons as subcollection
+      const lessonsRef = db
+        .collection("courses")
+        .doc(course.id)
+        .collection("lessons");
+
+      for (let i = 0; i < course.lessons.length; i++) {
+        await lessonsRef.add({
+          title: course.lessons[i].title,
+          description: course.lessons[i].description,
+          order: i,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    } catch (err) {
+      console.error(`   ✗ Failed to create ${course.title}:`, err.message);
+    }
+  }
+
+  console.log();
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
+async function main() {
+  try {
+    const args = process.argv.slice(2);
+    const shouldReset = args.includes("--reset");
+
+    console.log("\n╔════════════════════════════════════════╗");
+    console.log("║   LMT Database Seed Script             ║");
+    console.log("╚════════════════════════════════════════╝\n");
+
+    if (shouldReset) {
+      await deleteAllData();
+    }
+
+    await seedUsers();
+    await seedCourses();
+
+    console.log("╔════════════════════════════════════════╗");
+    console.log("║   ✅ Seeding Complete!                 ║");
+    console.log("╚════════════════════════════════════════╝\n");
+
+    console.log("📖 Next steps:");
+    console.log(
+      "   1. Check Firestore security rules (see FIRESTORE_RULES.md)",
+    );
+    console.log("   2. Refresh your app to see courses and users");
+    console.log("   3. Login with student@example.com / password\n");
+
+    process.exit(0);
+  } catch (error) {
+    console.error("\n❌ Seeding failed:", error);
+    process.exit(1);
+  }
+}
+
+main();

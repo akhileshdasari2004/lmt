@@ -1,0 +1,76 @@
+{
+  "users": {
+    "user1": {
+      "email": "student@example.com",
+      "name": "John Student",
+      "photoURL": "",
+      "role": "student"
+    },
+    "admin1": {
+      "email": "admin@example.com",
+      "name": "Jane Admin",
+      "photoURL": "",
+      "role": "admin"
+    }
+  },
+  "courses": {
+    "course1": {
+      "title": "Introduction to JavaScript",
+      "description": "Learn JavaScript fundamentals from scratch",
+      "lessons": {
+        "lesson1": {
+          "title": "Variables and Data Types",
+          "order": 1
+        },
+        "lesson2": {
+          "title": "Functions and Scope",
+          "order": 2
+        },
+        "lesson3": {
+          "title": "DOM Manipulation",
+          "order": 3
+        }
+      }
+    },
+    "course2": {
+      "title": "React Fundamentals",
+      "description": "Master React concepts and hooks",
+      "lessons": {
+        "lesson1": {
+          "title": "Components and JSX",
+          "order": 1
+        },
+        "lesson2": {
+          "title": "Props and State",
+          "order": 2
+        },
+        "lesson3": {
+          "title": "useEffect Hook",
+          "order": 3
+        },
+        "lesson4": {
+          "title": "Context API",
+          "order": 4
+        }
+      }
+    },
+    "course3": {
+      "title": "Firebase for Beginners",
+      "description": "Getting started with Firebase services",
+      "lessons": {
+        "lesson1": {
+          "title": "Firebase Setup",
+          "order": 1
+        },
+        "lesson2": {
+          "title": "Firestore Basics",
+          "order": 2
+        },
+        "lesson3": {
+          "title": "Firebase Authentication",
+          "order": 3
+        }
+      }
+    }
+  }
+}

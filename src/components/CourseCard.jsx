@@ -6,19 +6,19 @@ const CourseCard = ({ course, progress = 0 }) => {
   return (
     <Link
       to={`/course/${course.id}`}
-      className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200"
+      className="course-card"
     >
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
+      <h3 className="course-card-title">{course.title}</h3>
 
-      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+      <div className="course-card-info">
         <span>{lessonCount} {lessonCount === 1 ? 'lesson' : 'lessons'}</span>
-        <span className="font-medium">{progress}%</span>
+        <span className="course-card-progress-label">{progress}%</span>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div className="course-card-progress-bar">
         <div
-          className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+          className="course-card-progress-fill"
           style={{ width: `${progress}%` }}
         ></div>
       </div>

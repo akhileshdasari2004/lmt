@@ -13,25 +13,25 @@ const LessonItem = ({ lesson, isCompleted, onToggle }) => {
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-      <div className="relative">
+    <div className="lesson-item">
+      <div className="lesson-item-checkbox-wrapper">
         <input
           type="checkbox"
           checked={isCompleted}
           onChange={handleToggle}
           disabled={loading}
-          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer disabled:opacity-50"
+          className="lesson-item-checkbox"
         />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="lesson-item-loading-spinner">
+            <div className="lesson-item-spinner"></div>
           </div>
         )}
       </div>
 
       <span
-        className={`flex-1 ${
-          isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
+        className={`lesson-item-title ${
+          isCompleted ? 'lesson-item-title-completed' : ''
         }`}
       >
         {lesson.title}
@@ -47,3 +47,4 @@ const LessonItem = ({ lesson, isCompleted, onToggle }) => {
 };
 
 export default LessonItem;
+

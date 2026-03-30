@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getProgress, toggleLessonComplete, updateProgress } from '../services/firestoreService';
 
+/**
+ * Hook for managing course progress tracking
+ * Storage: /users/{userId}/progress/{courseId}
+ * 
+ * @param {string} userId - The user's UID
+ * @param {string} courseId - The course ID
+ * @returns {Object} Progress state and methods
+ */
 export const useProgress = (userId, courseId) => {
   const [progress, setProgress] = useState({ completedLessons: [] });
   const [loading, setLoading] = useState(true);
@@ -18,6 +26,7 @@ export const useProgress = (userId, courseId) => {
         setProgress(data);
       } catch (err) {
         console.error('Error fetching progress:', err);
+        setProgress({ completedLessons: [] });
       } finally {
         setLoading(false);
       }

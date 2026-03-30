@@ -104,31 +104,51 @@ export const getCourse = async (courseId) => {
 };
 
 // Progress operations
+// Storage: /users/{userId}/progress/{courseId}
 export const getProgress = async (userId, courseId) => {
-  const progressId = `${userId}_${courseId}`;
-  const docSnap = await getDoc(doc(db, "progress", progressId));
-  return docSnap.exists()
-    ? docSnap.data()
-    : { userId, courseId, completedLessons: [] };
+  try {
+    const progressDocRef = doc(db, "users", userId, "progress", courseId);
+    const docSnap = await getDoc(progressDocRef);
+    return docSnap.exists()
+      ? docSnap.data()
+      : { courseId, completedLessons: [] };
+  } catch (err) {
+    console.error("Error fetching progress:", err);
+    throw err;
+  }
 };
 
 export const updateProgress = async (userId, courseId, completedLessons) => {
-  const progressId = `${userId}_${courseId}`;
-  await setDoc(doc(db, "progress", progressId), {
-    userId,
-    courseId,
-    completedLessons,
-  });
+  try {
+    const progressDocRef = doc(db, "users", userId, "progress", courseId);
+    await setDoc(
+      progressDocRef,
+      {
+        courseId,
+        completedLessons,
+        updatedAt: new Date(),
+      },
+      { merge: true },
+    );
+  } catch (err) {
+    console.error("Error updating progress:", err);
+    throw err;
+  }
 };
 
 export const toggleLessonComplete = async (userId, courseId, lessonId) => {
-  const progress = await getProgress(userId, courseId);
-  const completedLessons = progress.completedLessons || [];
+  try {
+    const progress = await getProgress(userId, courseId);
+    const completedLessons = progress.completedLessons || [];
 
-  const newCompleted = completedLessons.includes(lessonId)
-    ? completedLessons.filter((id) => id !== lessonId)
-    : [...completedLessons, lessonId];
+    const newCompleted = completedLessons.includes(lessonId)
+      ? completedLessons.filter((id) => id !== lessonId)
+      : [...completedLessons, lessonId];
 
-  await updateProgress(userId, courseId, newCompleted);
-  return newCompleted;
+    await updateProgress(userId, courseId, newCompleted);
+    return newCompleted;
+  } catch (err) {
+    console.error("Error toggling lesson:", err);
+    throw err;
+  }
 };
