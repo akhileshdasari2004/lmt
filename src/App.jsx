@@ -1,11 +1,21 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { AdminAuthProvider, useAdminAuth } from './hooks/useAdminAuth';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import Dashboard from './pages/Dashboard';
 import Course from './pages/Course';
+import ProfilePage from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
+import CourseManage from './pages/CourseManage';
+import Navbar from './components/Navbar';
+import AdminNavbar from './components/admin/AdminNavbar';
 import './index.css';
 
-// Protected Route component
+// ===== STUDENT AUTH ROUTES =====
+
+// Protected Route component for students
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -20,52 +30,89 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
+// Layout with Navbar for protected student routes
+const ProtectedLayout = () => {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <Outlet />
+    </div>
+  );
+};
+
 // Public Route component - redirects to dashboard if authenticated
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
+  // Show login page while loading (faster perceived performance)
+  // Only redirect if definitively authenticated
+  return isAuthenticated && !loading ? <Navigate to="/dashboard" replace /> : children;
+};
+
+// ===== ADMIN AUTH ROUTES =====
+
+// Protected Route component for admins
+const AdminProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAdminAuth();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
+  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
+};
+
+// Layout with Admin Navbar for protected admin routes
+const AdminProtectedLayout = () => {
+  return (
+    <div className="min-h-screen bg-gray-900">
+      <AdminNavbar />
+      <Outlet />
+    </div>
+  );
+};
+
+// Public Admin Route - redirects to admin dashboard if authenticated
+const AdminPublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAdminAuth();
+
+  // Show login page while loading (faster perceived performance)
+  // Only redirect if definitively authenticated
+  return isAuthenticated && !loading ? <Navigate to="/admin" replace /> : children;
 };
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/course/:id"
-            element={
-              <ProtectedRoute>
-                <Course />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <AdminAuthProvider>
+        <Router>
+          <Routes>
+            {/* ===== STUDENT ROUTES ===== */}
+            <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+            
+            <Route element={<ProtectedRoute><ProtectedLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/course/:id" element={<Course />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+
+            {/* ===== ADMIN ROUTES ===== */}
+            <Route path="/admin/login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
+            
+            <Route element={<AdminProtectedRoute><AdminProtectedLayout /></AdminProtectedRoute>}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/courses/:id" element={<CourseManage />} />
+            </Route>
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </AdminAuthProvider>
     </AuthProvider>
   );
 }

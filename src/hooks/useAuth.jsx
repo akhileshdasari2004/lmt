@@ -42,7 +42,8 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {/* Render children even while loading so login page appears instantly */}
+      {children}
     </AuthContext.Provider>
   );
 };

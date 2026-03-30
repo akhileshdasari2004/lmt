@@ -4,20 +4,12 @@ import { useAuth } from '../hooks/useAuth';
 import CourseCard from '../components/CourseCard';
 
 const Dashboard = () => {
-  const { user, logOut } = useAuth();
+  const { user } = useAuth();
   const { courses, loading: coursesLoading } = useCourses();
-
-  const handleLogout = async () => {
-    try {
-      await logOut();
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
 
   if (coursesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-gray-600">Loading courses...</p>
@@ -27,23 +19,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Course Dashboard</h1>
-            <p className="text-sm text-gray-600">Welcome back, {user?.email}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
+    <div className="flex-1">
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
