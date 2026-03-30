@@ -83,3 +83,45 @@ export const deleteAvatar = async (userId) => {
     }
   }
 };
+
+/**
+ * Upload a file to Firebase Storage
+ * @param {string} path - Path in storage (e.g., 'courses/123/image.jpg')
+ * @param {File} file - File to upload
+ * @returns {Promise<string>} - Download URL of the uploaded file
+ */
+export const uploadFile = async (path, file) => {
+  try {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file, {
+      customMetadata: {
+        uploadedAt: new Date().toISOString(),
+      },
+    });
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    if (error.code === "storage/retry-limit-exceeded") {
+      throw new Error(
+        "Upload took too long. Please try again with a smaller file.",
+      );
+    }
+    throw error;
+  }
+};
+
+/**
+ * Delete a file from Firebase Storage
+ * @param {string} path - Path in storage (e.g., 'courses/123/image.jpg')
+ */
+export const deleteFile = async (path) => {
+  try {
+    const storageRef = ref(storage, path);
+    await deleteObject(storageRef);
+  } catch (error) {
+    // If file doesn't exist, ignore the error
+    if (error.code !== "storage/object-not-found") {
+      throw error;
+    }
+  }
+};

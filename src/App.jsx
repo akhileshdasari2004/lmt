@@ -14,6 +14,10 @@ import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminManagement from './pages/AdminManagement';
 import CourseManage from './pages/CourseManage';
+import AdminDashboardNew from './pages/AdminDashboardNew';
+import AdminCoursesPage from './pages/AdminCoursesPage';
+import AdminBookingsPage from './pages/AdminBookingsPage';
+import AdminCourseForm from './pages/AdminCourseForm';
 import Navbar from './components/Navbar';
 import AdminNavbar from './components/admin/AdminNavbar';
 import './index.css';
@@ -116,6 +120,13 @@ function App() {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/courses/:id" element={<CourseManage />} />
+              
+              {/* New Admin Panel Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboardNew />} />
+              <Route path="/admin/courses" element={<AdminCoursesPage />} />
+              <Route path="/admin/courses/new" element={<AdminCourseForm />} />
+              <Route path="/admin/courses/edit/:courseId" element={<AdminCourseForm />} />
+              <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             </Route>
 
             {/* Fallback */}
