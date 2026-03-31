@@ -116,14 +116,14 @@ const AdminManagement = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 text-slate-100">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Management</h1>
-        <p className="text-gray-600">Grant or revoke admin roles for users</p>
+        <h1 className="text-2xl font-semibold text-slate-100 tracking-tight mb-2">Admin Management</h1>
+        <p className="text-slate-400">Grant or revoke admin roles for users</p>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 border border-red-200">
+        <div className="bg-red-500/10 text-red-300 p-4 rounded-xl mb-6 border border-red-500/30">
           {error}
           <button 
             onClick={() => setError('')}
@@ -135,26 +135,26 @@ const AdminManagement = () => {
       )}
 
       {success && (
-        <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 border border-green-200">
+        <div className="bg-emerald-500/10 text-emerald-300 p-4 rounded-xl mb-6 border border-emerald-500/30">
           ✅ {success}
         </div>
       )}
 
       {/* Quick Grant Admin Form */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Quick Grant Admin Role</h2>
+      <div className="bg-[#131e30] p-6 rounded-2xl mb-8 border border-[#1e3a5f]">
+        <h2 className="text-lg font-medium mb-4 text-slate-200">Quick Grant Admin Role</h2>
         <form onSubmit={handleGrantRoleByEmail} className="flex gap-4">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter email address"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 bg-[#1a2842] border border-[#1e3a5f] rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-all duration-200"
           />
           <button
             type="submit"
             disabled={grantingRole}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="px-6 py-2.5 bg-sky-500 text-white text-sm font-medium rounded-xl hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)]"
           >
             {grantingRole ? 'Granting...' : 'Grant Admin'}
           </button>
@@ -162,41 +162,41 @@ const AdminManagement = () => {
       </div>
 
       {/* Users List */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">All Users</h2>
+      <div className="bg-[#131e30] rounded-2xl overflow-hidden border border-[#1e3a5f]">
+        <div className="px-6 py-4 bg-[#1a2842] border-b border-[#1e3a5f]">
+          <h2 className="text-lg font-medium text-slate-200">All Users</h2>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-gray-500">
-            <div className="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <div className="p-8 text-center text-slate-400">
+            <div className="w-6 h-6 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
             Loading users...
           </div>
         ) : users.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-slate-400">
             No users found
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-[#1a2842] border-b border-[#1e3a5f]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Role</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.uid} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">{user.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{user.name || '-'}</td>
+                  <tr key={user.uid} className="border-b border-[#1e3a5f] hover:bg-[#1f3352]">
+                    <td className="px-6 py-4 text-sm text-slate-200">{user.email}</td>
+                    <td className="px-6 py-4 text-sm text-slate-400">{user.name || '-'}</td>
                     <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         user.role === 'admin'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-blue-100 text-blue-800'
+                          ? 'bg-sky-500/10 text-sky-300 border border-sky-500/20'
+                          : 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
                       }`}>
                         {user.role || 'student'}
                       </span>
@@ -207,8 +207,8 @@ const AdminManagement = () => {
                         disabled={grandingAdminForUser === user.uid}
                         className={`px-4 py-2 rounded font-medium text-white transition ${
                           user.role === 'admin'
-                            ? 'bg-orange-600 hover:bg-orange-700'
-                            : 'bg-green-600 hover:bg-green-700'
+                            ? 'bg-amber-500 hover:bg-amber-600'
+                            : 'bg-sky-500 hover:bg-sky-600'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {grandingAdminForUser === user.uid 

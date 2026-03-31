@@ -121,15 +121,15 @@ const AdminDashboard = () => {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex min-h-screen bg-[#0c1220]">
       <AdminSidebar />
 
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-            <p className="text-gray-400 mt-2">Performance overview and analytics</p>
+            <h1 className="text-3xl font-bold text-slate-100">Dashboard</h1>
+            <p className="text-slate-400 mt-2">Performance overview and analytics</p>
           </div>
 
           {error && (
@@ -174,12 +174,12 @@ const AdminDashboard = () => {
 
               {/* Course Analytics Table */}
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">All Courses</h2>
+                <h2 className="text-xl font-bold text-slate-100 mb-4">All Courses</h2>
                 {courses.length > 0 ? (
                   <CourseAnalyticsTable courses={courses} />
                 ) : (
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
-                    <p className="text-gray-400">No courses found</p>
+                  <div className="bg-[#131e30] border border-[#1e3a5f] rounded-lg p-8 text-center">
+                    <p className="text-slate-400">No courses found</p>
                   </div>
                 )}
               </div>
@@ -187,40 +187,40 @@ const AdminDashboard = () => {
               {/* Student Requests (visible on main admin dashboard) */}
               <div className="mt-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-slate-100">
                     Student Requests ({pendingRequests.length})
                   </h2>
                   <Link
                     to="/admin/assignments"
-                    className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                    className="text-sm text-sky-400 hover:text-sky-300 font-medium"
                   >
                     Open Assignment Board
                   </Link>
                 </div>
 
                 {pendingRequests.length === 0 ? (
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
-                    <p className="text-gray-400">No pending student requests</p>
+                  <div className="bg-[#131e30] border border-[#1e3a5f] rounded-lg p-6 text-center">
+                    <p className="text-slate-400">No pending student requests</p>
                   </div>
                 ) : (
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg divide-y divide-gray-700">
+                  <div className="bg-[#131e30] border border-[#1e3a5f] rounded-lg divide-y divide-gray-700">
                     {pendingRequests.slice(0, 8).map((request) => (
                       <div
                         key={request.requestId}
                         className="px-5 py-4 flex items-center justify-between gap-4"
                       >
                         <div>
-                          <p className="text-white font-medium">
+                          <p className="text-slate-100 font-medium">
                             {request.courseTitle || 'Untitled Subject'}
                           </p>
-                          <p className="text-sm text-gray-400 mt-1">
+                          <p className="text-sm text-slate-400 mt-1">
                             {request.studentName || request.studentEmail} requested access
                           </p>
                         </div>
                         <button
                           onClick={() => handleAcceptRequest(request)}
                           disabled={processingRequestId === request.requestId}
-                          className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-green-600 text-white hover:bg-green-500 disabled:opacity-60"
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-green-600 text-slate-100 hover:bg-green-500 disabled:opacity-60"
                         >
                           {processingRequestId === request.requestId
                             ? 'Accepting...'

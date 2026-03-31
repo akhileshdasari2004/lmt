@@ -22,12 +22,12 @@ const Navbar = () => {
   const emailInitial = user?.email?.charAt(0).toUpperCase() || '?';
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-[#16162a]/95 backdrop-blur border-b border-[#1e1e35]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - App name */}
           <div className="flex-shrink-0">
-            <Link to="/dashboard" className="text-xl font-bold text-gray-900">
+            <Link to="/dashboard" className="text-xl font-bold text-slate-100">
               Course Dashboard
             </Link>
           </div>
@@ -44,11 +44,11 @@ const Navbar = () => {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-medium">
                     {emailInitial}
                   </div>
                 )}
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                <span className="text-sm font-medium text-slate-300 hidden sm:block">
                   {displayName}
                 </span>
               </div>
@@ -56,7 +56,7 @@ const Navbar = () => {
               {/* Profile link */}
               <Link
                 to="/profile"
-                className="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100"
+                className="text-sm text-slate-400 hover:text-slate-100 px-3 py-2 rounded-xl hover:bg-[#252540] border border-transparent hover:border-[#2d2d50] transition-all duration-200"
               >
                 Profile
               </Link>
@@ -64,7 +64,7 @@ const Navbar = () => {
               {/* Logout button */}
               <button
                 onClick={handleLogout}
-                className="text-sm text-red-600 hover:text-red-800 px-3 py-2 rounded-md hover:bg-red-50"
+                className="text-sm text-slate-300 hover:text-white px-3 py-2 rounded-xl border border-[#2d2d50] hover:border-[#4d4d80] hover:bg-[#252540] transition-all duration-200"
               >
                 Logout
               </button>

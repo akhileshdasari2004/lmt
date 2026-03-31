@@ -21,12 +21,12 @@ const AdminNavbar = () => {
   const emailInitial = user?.email?.charAt(0).toUpperCase() || '?';
 
   return (
-    <nav className="bg-gray-900 shadow-lg border-b border-red-600">
+    <nav className="bg-[#131e30]/95 backdrop-blur border-b border-[#1e3a5f]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Admin title and menu */}
           <div className="flex items-center gap-8">
-            <Link to="/admin" className="text-xl font-bold text-red-500">
+            <Link to="/admin" className="text-xl font-bold text-sky-400">
               Admin Dashboard
             </Link>
             
@@ -34,13 +34,13 @@ const AdminNavbar = () => {
             <div className="hidden md:flex gap-6">
               <Link 
                 to="/admin" 
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+                className="text-slate-300 hover:text-slate-100 px-3 py-2 rounded-xl text-sm font-medium hover:bg-[#1f3352] border border-transparent hover:border-[#2563a8] transition-all duration-200"
               >
                 Courses
               </Link>
               <Link 
                 to="/admin/management" 
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+                className="text-slate-300 hover:text-slate-100 px-3 py-2 rounded-xl text-sm font-medium hover:bg-[#1f3352] border border-transparent hover:border-[#2563a8] transition-all duration-200"
               >
                 Users & Roles
               </Link>
@@ -59,11 +59,11 @@ const AdminNavbar = () => {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white text-sm font-medium">
                     {emailInitial}
                   </div>
                 )}
-                <span className="text-sm font-medium text-gray-200 hidden sm:block">
+                <span className="text-sm font-medium text-slate-200 hidden sm:block">
                   {displayName}
                 </span>
               </div>
@@ -71,7 +71,7 @@ const AdminNavbar = () => {
               {/* Logout button */}
               <button
                 onClick={handleLogout}
-                className="text-sm text-red-400 hover:text-red-300 px-3 py-2 rounded-md hover:bg-red-900 transition"
+                className="text-sm text-slate-300 hover:text-white px-3 py-2 rounded-xl border border-[#1e3a5f] hover:border-[#2563a8] hover:bg-[#1f3352] transition-all duration-200"
               >
                 Logout
               </button>

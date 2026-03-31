@@ -6,20 +6,20 @@ import React from 'react';
  */
 const StatsCard = ({ icon, label, value, trend = null, color = 'blue' }) => {
   const colorClasses = {
-    blue: 'bg-blue-900 bg-opacity-20 border-blue-700 text-blue-400',
-    green: 'bg-green-900 bg-opacity-20 border-green-700 text-green-400',
-    purple: 'bg-purple-900 bg-opacity-20 border-purple-700 text-purple-400',
-    orange: 'bg-orange-900 bg-opacity-20 border-orange-700 text-orange-400',
+    blue: 'bg-sky-500/10 border-sky-500/30 text-sky-300',
+    green: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
+    purple: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300',
+    orange: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
   };
 
   const bgColor = colorClasses[color] || colorClasses.blue;
 
   return (
-    <div className={`border rounded-lg p-6 ${bgColor}`}>
+    <div className={`border rounded-2xl p-6 transition-all duration-200 hover:border-[#2563a8] ${bgColor}`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-400 text-sm font-medium">{label}</p>
-          <p className="text-white text-3xl font-bold mt-2">{value}</p>
+          <p className="text-slate-400 text-sm font-medium">{label}</p>
+          <p className="text-slate-100 text-3xl font-semibold mt-2 tracking-tight">{value}</p>
           {trend && (
             <p className={`text-sm mt-2 ${trend.isPositive ? 'text-green-400' : 'text-red-400'}`}>
               {trend.isPositive ? '↑' : '↓'} {trend.percentage}% from last week

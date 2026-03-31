@@ -32,28 +32,28 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 px-4">
-      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-2xl border border-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-[#0c1220] px-4">
+      <div className="max-w-md w-full space-y-8 bg-[#131e30] p-8 rounded-2xl shadow-[0_0_20px_rgba(14,165,233,0.15)] border border-[#1e3a5f]">
         <div>
-          <h1 className="text-center text-3xl font-bold text-red-500">Admin Panel</h1>
-          <h2 className="text-center text-lg font-semibold text-gray-300 mt-2">
+          <h1 className="text-center text-3xl font-bold text-sky-400">Admin Panel</h1>
+          <h2 className="text-center text-lg font-semibold text-slate-300 mt-2">
             Admin Login
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
+          <p className="mt-2 text-center text-sm text-slate-400">
             Only admins can access this area
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {error && (
-            <div className="bg-red-900 bg-opacity-50 text-red-200 p-3 rounded-md text-sm border border-red-700">
+            <div className="bg-red-500/10 text-red-300 p-3 rounded-xl text-sm border border-red-500/30">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                 Email Address
               </label>
               <input
@@ -64,13 +64,13 @@ const AdminLogin = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autocomplete="email"
-                className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full bg-[#1a2842] border border-[#1e3a5f] rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-all duration-200"
                 placeholder="admin@example.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                 Password
               </label>
               <input
@@ -81,7 +81,7 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autocomplete="current-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full bg-[#1a2842] border border-[#1e3a5f] rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-all duration-200"
                 placeholder="•••••••••"
               />
             </div>
@@ -90,28 +90,28 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition"
+            className="w-full py-2.5 px-4 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-all duration-200 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Admin Sign In'}
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-gray-600 space-y-4">
-          <p className="text-center text-sm text-gray-400">
+        <div className="mt-6 pt-6 border-t border-[#1e3a5f] space-y-4">
+          <p className="text-center text-sm text-slate-400">
             Don't have an admin account?{' '}
             <Link
               to="/admin/signup"
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-sky-400 hover:text-sky-300 font-medium"
             >
               Create One
             </Link>
           </p>
 
-          <p className="text-center text-sm text-gray-400">
+          <p className="text-center text-sm text-slate-400">
             Looking for the student dashboard?{' '}
             <Link
               to="/"
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-sky-400 hover:text-sky-300 font-medium"
             >
               Student Login
             </Link>
