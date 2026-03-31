@@ -65,14 +65,14 @@ const StudentProtectedRoute = ({ children, allowedStatus = 'approved' }) => {
 };
 
 const StudentLayout = () => (
-  <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+  <div className="min-h-screen bg-violet-25">
     <Navbar />
     <Outlet />
   </div>
 );
 
 const AdminLayout = () => (
-  <div className="min-h-screen" style={{ backgroundColor: 'var(--color-admin-base)' }}>
+  <div className="min-h-screen bg-blue-25 admin-page">
     <AdminNavbar />
     <Outlet />
   </div>

@@ -151,12 +151,12 @@ const Dashboard = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface">
+      <div className="min-h-screen flex items-center justify-center bg-violet-25">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-text-primary mb-2">
+          <h2 className="text-2xl font-semibold text-violet-900 mb-2">
             Please log in
           </h2>
-          <p className="text-text-secondary">
+          <p className="text-violet-400">
             You need to be logged in to view your dashboard.
           </p>
         </div>
@@ -165,21 +165,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary flex">
+    <div className="flex min-h-screen bg-violet-25">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 px-8 py-6 overflow-y-auto">
         {/* Top bar */}
-        <div className="px-4 md:px-8 lg:px-12 py-6 border-b border-surface-border flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-1">
-              Dashboard
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-              Good to see you, {user.email?.split('@')[0] || 'student'}
+            <h1 className="text-2xl font-semibold text-violet-900">
+              My Dashboard
             </h1>
-            <p className="text-xs text-text-secondary mt-1">
-              Track your learning progress across all active courses.
+            <p className="text-sm text-violet-400 mt-0.5">
+              Good to see you, {user.email?.split('@')[0] || 'student'}
             </p>
           </div>
 
@@ -188,9 +185,9 @@ const Dashboard = () => {
               <input
                 type="text"
                 placeholder="Search courses (UI only)…"
-                className="w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                className="s-input"
               />
-              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-text-muted">
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-violet-300">
                 ⌘K
               </span>
             </div>
@@ -198,44 +195,22 @@ const Dashboard = () => {
         </div>
 
         {/* Content */}
-        <div className="px-4 md:px-8 lg:px-12 py-6 space-y-8">
+        <div className="space-y-8">
           {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl bg-surface-card border border-surface-border px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted mb-2">
-                Courses
-              </p>
-              <p className="text-2xl font-semibold text-text-primary">
-                {stats.totalCourses}
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Enrolled courses
-              </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="s-stat-card">
+              <p className="text-2xl font-bold text-violet-700">{stats.totalCourses}</p>
+              <p className="text-xs text-violet-400 mt-1">Courses</p>
             </div>
 
-            <div className="rounded-2xl bg-surface-card border border-surface-border px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted mb-2">
-                Lessons
-              </p>
-              <p className="text-2xl font-semibold text-text-primary">
-                {stats.totalLessons}
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Total assigned lessons
-              </p>
+            <div className="s-stat-card">
+              <p className="text-2xl font-bold text-violet-700">{stats.totalLessons}</p>
+              <p className="text-xs text-violet-400 mt-1">Lessons assigned</p>
             </div>
 
-            <div className="rounded-2xl bg-surface-card border border-surface-border px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted mb-2">
-                Overall progress
-              </p>
-              <p className="text-2xl font-semibold text-text-primary">
-                {/* Individual card shows accurate %; here we show placeholder */}
-                —
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Per-course cards show detailed progress
-              </p>
+            <div className="s-stat-card">
+              <p className="text-2xl font-bold text-violet-700">—</p>
+              <p className="text-xs text-violet-400 mt-1">Progress</p>
             </div>
           </div>
 
@@ -243,10 +218,10 @@ const Dashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
                   My courses
                 </p>
-                <h2 className="text-lg font-semibold text-text-primary mt-1">
+                <h2 className="text-base font-semibold text-violet-900 mt-1">
                   Continue where you left off
                 </h2>
               </div>
@@ -256,22 +231,22 @@ const Dashboard = () => {
               <div className="flex items-center justify-center py-16">
                 <div className="flex flex-col items-center gap-3">
                   <span className="h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-text-secondary text-sm">
+                  <p className="text-violet-400 text-sm">
                     Loading courses…
                   </p>
                 </div>
               </div>
             ) : courses.length === 0 ? (
-              <div className="rounded-2xl bg-surface-card border border-dashed border-surface-border px-6 py-10 text-center">
-                <p className="text-sm font-medium text-text-primary mb-1">
+              <div className="s-card text-center">
+                <p className="text-sm font-medium text-violet-900 mb-1">
                   No lessons assigned yet
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-violet-400">
                   Once an admin assigns lessons, they will appear here automatically.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {courses.map((course, index) => (
                   <CourseCardWithProgress
                     key={course.id}
@@ -288,37 +263,37 @@ const Dashboard = () => {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
                   Approved requests
                 </p>
-                <h2 className="text-lg font-semibold text-text-primary mt-1">
+                <h2 className="text-base font-semibold text-violet-900 mt-1">
                   Subjects approved by admin
                 </h2>
               </div>
             </div>
 
             {approvedRequests.length === 0 ? (
-              <div className="rounded-2xl bg-surface-card border border-surface-border px-6 py-6 text-center">
-                <p className="text-sm font-medium text-text-primary mb-1">
+              <div className="s-card text-center">
+                <p className="text-sm font-medium text-violet-900 mb-1">
                   No approved requests yet
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-violet-400">
                   Once an admin approves your subject requests, they will show up here.
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl bg-surface-card border border-surface-border divide-y divide-surface-border">
+              <div className="s-card divide-y divide-violet-100">
                 {approvedRequests.map((req) => (
                   <div key={req.requestId} className="px-4 py-3 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-text-primary">
+                      <p className="text-sm font-medium text-violet-900">
                         {req.courseTitle || 'Untitled Subject'}
                       </p>
-                      <p className="text-xs text-text-muted">
+                      <p className="text-xs text-violet-400">
                         Approved request
                       </p>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-success/15 px-3 py-1 text-[11px] font-semibold text-success">
+                    <span className="s-badge-approved">
                       Approved
                     </span>
                   </div>
@@ -331,37 +306,37 @@ const Dashboard = () => {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
                   Pending requests
                 </p>
-                <h2 className="text-lg font-semibold text-text-primary mt-1">
+                <h2 className="text-base font-semibold text-violet-900 mt-1">
                   Waiting for admin review
                 </h2>
               </div>
             </div>
 
             {pendingRequests.length === 0 ? (
-              <div className="rounded-2xl bg-surface-card border border-surface-border px-6 py-6 text-center">
-                <p className="text-sm font-medium text-text-primary mb-1">
+              <div className="s-card text-center">
+                <p className="text-sm font-medium text-violet-900 mb-1">
                   No pending requests
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-violet-400">
                   You can request new subjects from the pending screen before approval.
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl bg-surface-card border border-surface-border divide-y divide-surface-border">
+              <div className="s-card divide-y divide-violet-100">
                 {pendingRequests.map((req) => (
                   <div key={req.requestId} className="px-4 py-3 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-text-primary">
+                      <p className="text-sm font-medium text-violet-900">
                         {req.courseTitle || 'Untitled Subject'}
                       </p>
-                      <p className="text-xs text-text-muted">
+                      <p className="text-xs text-violet-400">
                         Pending approval
                       </p>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-warning/15 px-3 py-1 text-[11px] font-semibold text-warning">
+                    <span className="s-badge-pending">
                       Pending
                     </span>
                   </div>
@@ -374,58 +349,58 @@ const Dashboard = () => {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
                   Request subjects
                 </p>
-                <h2 className="text-lg font-semibold text-text-primary mt-1">
+                <h2 className="text-base font-semibold text-violet-900 mt-1">
                   Ask admin to map new subjects
                 </h2>
               </div>
             </div>
 
             {requestError && (
-              <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
-                <p className="text-sm text-danger">{requestError}</p>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <p className="text-sm text-red-600">{requestError}</p>
               </div>
             )}
             {requestSuccess && (
-              <div className="rounded-xl border border-success/30 bg-success/10 px-4 py-3">
-                <p className="text-sm text-success">{requestSuccess}</p>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <p className="text-sm text-emerald-700">{requestSuccess}</p>
               </div>
             )}
 
             {coursesLoading ? (
-              <div className="rounded-2xl bg-surface-card border border-surface-border px-6 py-8 text-center">
-                <p className="text-sm text-text-secondary">Loading available subjects...</p>
+              <div className="s-card text-center">
+                <p className="text-sm text-violet-400">Loading available subjects...</p>
               </div>
             ) : requestableCourses.length === 0 ? (
-              <div className="rounded-2xl bg-surface-card border border-surface-border px-6 py-8 text-center">
-                <p className="text-sm font-medium text-text-primary mb-1">
+              <div className="s-card text-center">
+                <p className="text-sm font-medium text-violet-900 mb-1">
                   No new subjects available to request
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-violet-400">
                   You already have pending/approved requests for all current subjects.
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl bg-surface-card border border-surface-border divide-y divide-surface-border">
+              <div className="s-card divide-y divide-violet-100">
                 {requestableCourses.map((course) => (
                   <div
                     key={course.id}
                     className="px-4 py-3 flex items-center justify-between gap-3"
                   >
                     <div>
-                      <p className="text-sm font-medium text-text-primary">
+                      <p className="text-sm font-medium text-violet-900">
                         {course.title || 'Untitled Subject'}
                       </p>
-                      <p className="text-xs text-text-muted">
+                      <p className="text-xs text-violet-400">
                         {(course.lessons || []).length} lessons
                       </p>
                     </div>
                     <button
                       onClick={() => handleSubjectRequest(course)}
                       disabled={submittingRequestFor === course.id}
-                      className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-brand-500 text-white disabled:opacity-60 hover:bg-brand-600"
+                      className="s-button text-xs px-3 py-1.5 disabled:opacity-60"
                     >
                       {submittingRequestFor === course.id ? 'Requesting...' : 'Request Subject'}
                     </button>
