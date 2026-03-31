@@ -1,5 +1,5 @@
 // src/services/adminCourseService.js
-import { db } from './firebase';
+import { db } from "./firebase";
 import {
   collection,
   doc,
@@ -13,7 +13,7 @@ import {
   serverTimestamp,
   writeBatch,
   where,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
 // ==================== COURSE OPERATIONS ====================
 
@@ -23,7 +23,7 @@ import {
  * @returns {Promise<string>} - Created course ID
  */
 export const createCourse = async (courseData) => {
-  const courseRef = await addDoc(collection(db, 'courses'), {
+  const courseRef = await addDoc(collection(db, "courses"), {
     ...courseData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -37,7 +37,7 @@ export const createCourse = async (courseData) => {
  * @returns {Promise<Array>} - Array of courses
  */
 export const getAllCoursesAdmin = async () => {
-  const q = query(collection(db, 'courses'), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({
     id: doc.id,
@@ -53,7 +53,7 @@ export const getAllCoursesAdmin = async () => {
  * @returns {Promise<Object|null>}
  */
 export const getCourseById = async (courseId) => {
-  const docSnap = await getDoc(doc(db, 'courses', courseId));
+  const docSnap = await getDoc(doc(db, "courses", courseId));
   if (!docSnap.exists()) return null;
   return {
     id: docSnap.id,
@@ -69,7 +69,7 @@ export const getCourseById = async (courseId) => {
  * @param {Object} updates - { title, description }
  */
 export const updateCourse = async (courseId, updates) => {
-  const courseRef = doc(db, 'courses', courseId);
+  const courseRef = doc(db, "courses", courseId);
   await updateDoc(courseRef, {
     ...updates,
     updatedAt: serverTimestamp(),
@@ -84,13 +84,15 @@ export const deleteCourse = async (courseId) => {
   const batch = writeBatch(db);
 
   // Delete all lessons in subcollection
-  const lessonsSnapshot = await getDocs(collection(db, 'courses', courseId, 'lessons'));
+  const lessonsSnapshot = await getDocs(
+    collection(db, "courses", courseId, "lessons"),
+  );
   lessonsSnapshot.docs.forEach((lessonDoc) => {
     batch.delete(lessonDoc.ref);
   });
 
   // Delete course document
-  batch.delete(doc(db, 'courses', courseId));
+  batch.delete(doc(db, "courses", courseId));
 
   await batch.commit();
 };
@@ -104,10 +106,10 @@ export const deleteCourse = async (courseId) => {
  * @returns {Promise<string>} - Created lesson ID
  */
 export const createLesson = async (courseId, lessonData) => {
-  const lessonsRef = collection(db, 'courses', courseId, 'lessons');
+  const lessonsRef = collection(db, "courses", courseId, "lessons");
 
   // Get current lesson count for ordering
-  const courseRef = doc(db, 'courses', courseId);
+  const courseRef = doc(db, "courses", courseId);
   const courseSnap = await getDoc(courseRef);
   const currentCount = courseSnap.data()?.lessonCount || 0;
 
@@ -135,8 +137,8 @@ export const createLesson = async (courseId, lessonData) => {
  */
 export const getLessonsByCourse = async (courseId) => {
   const q = query(
-    collection(db, 'courses', courseId, 'lessons'),
-    orderBy('order', 'asc')
+    collection(db, "courses", courseId, "lessons"),
+    orderBy("order", "asc"),
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({
@@ -154,7 +156,9 @@ export const getLessonsByCourse = async (courseId) => {
  * @returns {Promise<Object|null>}
  */
 export const getLessonById = async (courseId, lessonId) => {
-  const docSnap = await getDoc(doc(db, 'courses', courseId, 'lessons', lessonId));
+  const docSnap = await getDoc(
+    doc(db, "courses", courseId, "lessons", lessonId),
+  );
   if (!docSnap.exists()) return null;
   return {
     id: docSnap.id,
@@ -171,7 +175,7 @@ export const getLessonById = async (courseId, lessonId) => {
  * @param {Object} updates
  */
 export const updateLesson = async (courseId, lessonId, updates) => {
-  const lessonRef = doc(db, 'courses', courseId, 'lessons', lessonId);
+  const lessonRef = doc(db, "courses", courseId, "lessons", lessonId);
   await updateDoc(lessonRef, {
     ...updates,
     updatedAt: serverTimestamp(),
@@ -187,7 +191,7 @@ export const deleteLesson = async (courseId, lessonId) => {
   const batch = writeBatch(db);
 
   // Get the lesson being deleted to know its order
-  const lessonRef = doc(db, 'courses', courseId, 'lessons', lessonId);
+  const lessonRef = doc(db, "courses", courseId, "lessons", lessonId);
   const lessonSnap = await getDoc(lessonRef);
   const deletedOrder = lessonSnap.data()?.order || 0;
 
@@ -196,8 +200,8 @@ export const deleteLesson = async (courseId, lessonId) => {
 
   // Get all lessons with higher order and decrement them
   const lessonsQuery = query(
-    collection(db, 'courses', courseId, 'lessons'),
-    where('order', '>', deletedOrder)
+    collection(db, "courses", courseId, "lessons"),
+    where("order", ">", deletedOrder),
   );
   const higherLessons = await getDocs(lessonsQuery);
 
@@ -209,7 +213,7 @@ export const deleteLesson = async (courseId, lessonId) => {
   });
 
   // Update course lesson count
-  const courseRef = doc(db, 'courses', courseId);
+  const courseRef = doc(db, "courses", courseId);
   const courseSnap = await getDoc(courseRef);
   const currentCount = courseSnap.data()?.lessonCount || 0;
   batch.update(courseRef, {
@@ -229,7 +233,7 @@ export const reorderLessons = async (courseId, orderedLessonIds) => {
   const batch = writeBatch(db);
 
   orderedLessonIds.forEach((lessonId, index) => {
-    const lessonRef = doc(db, 'courses', courseId, 'lessons', lessonId);
+    const lessonRef = doc(db, "courses", courseId, "lessons", lessonId);
     batch.update(lessonRef, {
       order: index,
       updatedAt: serverTimestamp(),
@@ -245,32 +249,54 @@ export const reorderLessons = async (courseId, orderedLessonIds) => {
  * @param {Array} lessons - Array of { title, content }
  */
 export const bulkCreateLessons = async (courseId, lessons) => {
-  const batch = writeBatch(db);
-  const courseRef = doc(db, 'courses', courseId);
+  try {
+    console.log(
+      `📚 bulkCreateLessons called for course: ${courseId}, lessons: ${lessons.length}`,
+    );
 
-  // Get current lesson count
-  const courseSnap = await getDoc(courseRef);
-  const startCount = courseSnap.data()?.lessonCount || 0;
+    const batch = writeBatch(db);
+    const courseRef = doc(db, "courses", courseId);
 
-  const createdLessonIds = [];
+    // Get current lesson count
+    const courseSnap = await getDoc(courseRef);
+    if (!courseSnap.exists()) {
+      throw new Error(`Course ${courseId} does not exist`);
+    }
 
-  lessons.forEach((lesson, index) => {
-    const lessonRef = doc(collection(db, 'courses', courseId, 'lessons'));
-    batch.set(lessonRef, {
-      ...lesson,
-      order: startCount + index,
-      createdAt: serverTimestamp(),
+    const startCount = courseSnap.data()?.lessonCount || 0;
+    console.log(`Current lessonCount: ${startCount}`);
+
+    const createdLessonIds = [];
+
+    lessons.forEach((lesson, index) => {
+      const lessonRef = doc(collection(db, "courses", courseId, "lessons"));
+      console.log(`Creating lesson ${index + 1}:`, lesson.title);
+      batch.set(lessonRef, {
+        ...lesson,
+        order: startCount + index,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      createdLessonIds.push(lessonRef.id);
+    });
+
+    // Update course lesson count
+    const newCount = startCount + lessons.length;
+    console.log(
+      `Updating course lessonCount from ${startCount} to ${newCount}`,
+    );
+    batch.update(courseRef, {
+      lessonCount: newCount,
       updatedAt: serverTimestamp(),
     });
-    createdLessonIds.push(lessonRef.id);
-  });
 
-  // Update course lesson count
-  batch.update(courseRef, {
-    lessonCount: startCount + lessons.length,
-    updatedAt: serverTimestamp(),
-  });
-
-  await batch.commit();
-  return createdLessonIds;
+    await batch.commit();
+    console.log(
+      `✅ bulkCreateLessons successful. Created ${createdLessonIds.length} lessons`,
+    );
+    return createdLessonIds;
+  } catch (err) {
+    console.error("❌ Error in bulkCreateLessons:", err);
+    throw err;
+  }
 };

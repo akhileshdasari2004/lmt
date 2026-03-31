@@ -8,27 +8,29 @@ Apply these rules in your Firebase Console (Firestore Database > Rules):
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Courses collection - anyone can read, only authenticated users can write (admin)
+    // Courses collection - anyone can read, authenticated users can write
     match /courses/{courseId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
-    }
+      allow delete: if request.auth != null;
 
-    // Lessons subcollection - anyone can read, only authenticated users can write
-    match /courses/{courseId}/lessons/{lessonId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    // Progress collection - users can only read/write their own progress
-    match /progress/{progressId} {
-      allow read, write: if request.auth != null;
+      // Lessons subcollection - anyone can read, authenticated users can write
+      match /lessons/{lessonId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+        allow delete: if request.auth != null;
+      }
     }
 
     // Users collection
     match /users/{userId} {
       // Users can always read/write their own document
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Progress subcollection - users can only read/write their own progress
+      match /progress/{courseId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }

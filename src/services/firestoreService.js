@@ -73,47 +73,124 @@ export const getUserRole = async (userId) => {
 
 // Course operations
 export const getAllCourses = async () => {
-  const querySnapshot = await getDocs(collection(db, "courses"));
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  try {
+    console.log("📚 getAllCourses called");
+    const querySnapshot = await getDocs(collection(db, "courses"));
+    console.log(`Found ${querySnapshot.docs.length} courses`);
+
+    const coursesData = await Promise.all(
+      querySnapshot.docs.map(async (doc) => {
+        const courseData = {
+          id: doc.id,
+          ...doc.data(),
+        };
+
+        // Fetch lessons for each course
+        try {
+          console.log(`Fetching lessons for course: ${doc.id}`);
+          const lessonsSnapshot = await getDocs(
+            collection(db, "courses", doc.id, "lessons"),
+          );
+          console.log(
+            `Found ${lessonsSnapshot.docs.length} lessons for course ${doc.id}`,
+          );
+
+          const lessons = lessonsSnapshot.docs
+            .map((lessonDoc) => ({ id: lessonDoc.id, ...lessonDoc.data() }))
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          courseData.lessons = lessons;
+        } catch (err) {
+          console.error(`Error fetching lessons for course ${doc.id}:`, err);
+          courseData.lessons = [];
+        }
+
+        return courseData;
+      }),
+    );
+
+    console.log(
+      "✅ getAllCourses complete. Courses with lessons:",
+      coursesData,
+    );
+    return coursesData;
+  } catch (err) {
+    console.error("❌ Error fetching all courses:", err);
+    throw err;
+  }
 };
 
 export const getCourse = async (courseId) => {
-  const docSnap = await getDoc(doc(db, "courses", courseId));
-  if (!docSnap.exists()) return null;
-
-  const courseData = { id: docSnap.id, ...docSnap.data() };
-
-  // Fetch lessons from subcollection
   try {
-    const lessonsSnapshot = await getDocs(
-      collection(db, "courses", courseId, "lessons"),
-    );
-    const lessons = lessonsSnapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }))
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-    courseData.lessons = lessons;
-  } catch (err) {
-    console.error("Error fetching lessons:", err);
-    courseData.lessons = [];
-  }
+    console.log(`📖 getCourse called for: ${courseId}`);
+    const docSnap = await getDoc(doc(db, "courses", courseId));
+    if (!docSnap.exists()) {
+      console.log(`⚠️ Course not found: ${courseId}`);
+      return null;
+    }
 
-  return courseData;
+    console.log(`✅ Course found: ${courseId}`);
+    const courseData = { id: docSnap.id, ...docSnap.data() };
+
+    // Fetch lessons from subcollection
+    try {
+      console.log(`Fetching lessons for course: ${courseId}`);
+      const lessonsSnapshot = await getDocs(
+        collection(db, "courses", courseId, "lessons"),
+      );
+      console.log(
+        `Found ${lessonsSnapshot.docs.length} lessons for course ${courseId}`,
+      );
+
+      const lessons = lessonsSnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+      courseData.lessons = lessons;
+      console.log(
+        `✅ getCourse complete with ${lessons.length} lessons:`,
+        lessons,
+      );
+    } catch (err) {
+      console.error(`Error fetching lessons for course ${courseId}:`, err);
+      courseData.lessons = [];
+    }
+
+    return courseData;
+  } catch (err) {
+    console.error(`❌ Error getting course ${courseId}:`, err);
+    throw err;
+  }
 };
 
 // Progress operations
 // Storage: /users/{userId}/progress/{courseId}
 export const getProgress = async (userId, courseId) => {
   try {
+    console.log(`📊 Fetching progress: user=${userId}, course=${courseId}`);
+
+    if (!userId || !courseId) {
+      console.warn("⚠️ Missing userId or courseId");
+      return { courseId, completedLessons: [] };
+    }
+
     const progressDocRef = doc(db, "users", userId, "progress", courseId);
     const docSnap = await getDoc(progressDocRef);
-    return docSnap.exists()
-      ? docSnap.data()
-      : { courseId, completedLessons: [] };
+
+    if (docSnap.exists()) {
+      console.log("✅ Progress found:", docSnap.data());
+      return docSnap.data();
+    } else {
+      console.log("ℹ️ No progress yet, initializing with empty array");
+      // Initialize new progress document
+      const initialProgress = {
+        courseId,
+        completedLessons: [],
+        createdAt: new Date(),
+      };
+      await setDoc(progressDocRef, initialProgress);
+      return initialProgress;
+    }
   } catch (err) {
-    console.error("Error fetching progress:", err);
+    console.error("❌ Error fetching progress:", err.message);
     throw err;
   }
 };

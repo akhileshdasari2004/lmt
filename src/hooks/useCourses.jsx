@@ -35,13 +35,19 @@ export const useCourse = (courseId) => {
 
   useEffect(() => {
     const fetchCourse = async () => {
-      if (!courseId) return;
+      if (!courseId) {
+        console.log('⚠️ useCourse: courseId not provided');
+        return;
+      }
 
       try {
         setLoading(true);
+        console.log(`🔍 useCourse: Fetching course data for courseId=${courseId}`);
         const data = await getCourse(courseId);
+        console.log(`✅ useCourse: Course data received:`, data);
         setCourse(data);
       } catch (err) {
+        console.error(`❌ useCourse: Error fetching course ${courseId}:`, err);
         setError(err.message);
       } finally {
         setLoading(false);

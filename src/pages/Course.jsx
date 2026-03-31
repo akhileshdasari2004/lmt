@@ -8,8 +8,8 @@ const Course = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { course, loading: courseLoading } = useCourse(id);
-  const { progress, toggleLesson, calculateProgress, loading: progressLoading } = useProgress(
+  const { course, loading: courseLoading, error: courseError } = useCourse(id);
+  const { progress, toggleLesson, calculateProgress, loading: progressLoading, error: progressError } = useProgress(
     user?.uid,
     id
   );
@@ -17,6 +17,23 @@ const Course = () => {
   const handleGoBack = () => {
     navigate('/dashboard');
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Please log in</h2>
+          <p className="text-gray-600 mb-4">You need to be logged in to view this course.</p>
+          <button
+            onClick={handleGoBack}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (courseLoading) {
     return (
@@ -29,7 +46,7 @@ const Course = () => {
     );
   }
 
-  if (!course) {
+  if (courseError || !course) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -95,6 +112,12 @@ const Course = () => {
               {progressPercent}%
             </p>
           </div>
+
+          {progressError && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+              <p className="text-sm text-red-700">Error loading progress: {progressError}</p>
+            </div>
+          )}
         </div>
       </header>
 

@@ -2,10 +2,15 @@ import { useCourses } from '../hooks/useCourses';
 import { useProgress } from '../hooks/useProgress';
 import { useAuth } from '../hooks/useAuth';
 import CourseCard from '../components/CourseCard';
+import { useEffect } from 'react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { courses, loading: coursesLoading } = useCourses();
+
+  useEffect(() => {
+    console.log('Dashboard mounted/updated. User:', user?.uid);
+  }, [user?.uid, courses.length]);
 
   if (coursesLoading) {
     return (
@@ -13,6 +18,17 @@ const Dashboard = () => {
         <div className="flex flex-col items-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Please log in</h2>
+          <p className="text-gray-600">You need to be logged in to view courses.</p>
         </div>
       </div>
     );
@@ -53,7 +69,7 @@ const Dashboard = () => {
               <CourseCardWithProgress
                 key={course.id}
                 course={course}
-                userId={user?.uid}
+                userId={user.uid}
               />
             ))}
           </div>
@@ -65,10 +81,14 @@ const Dashboard = () => {
 
 // Wrapper component to get progress for each course
 const CourseCardWithProgress = ({ course, userId }) => {
-  const { calculateProgress, completedCount } = useProgress(userId, course.id);
+  const { calculateProgress, loading, error } = useProgress(userId, course.id);
   const progress = calculateProgress(course.lessons || []);
 
-  return <CourseCard course={course} progress={progress} />;
+  if (error) {
+    console.error('Progress error for course', course.id, error);
+  }
+
+  return <CourseCard course={course} progress={progress} loading={loading} />;
 };
 
 export default Dashboard;

@@ -40,7 +40,7 @@ const AdminCourses = () => {
   useEffect(() => {
     const filtered = courses.filter(
       (course) =>
-        course.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (course.title || course.courseName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.instructor?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -142,19 +142,26 @@ const AdminCourses = () => {
                     ) : (
                       filteredCourses.map((course) => (
                         <tr key={course.id} className="hover:bg-gray-700 transition">
-                          <td className="px-6 py-4 text-white font-medium">{course.courseName}</td>
-                          <td className="px-6 py-4 text-gray-300">{course.instructor}</td>
-                          <td className="px-6 py-4 text-gray-300">{course.category}</td>
-                          <td className="px-6 py-4 text-gray-300">{course.totalLectures || 0}</td>
+                          <td className="px-6 py-4 text-white font-medium">{course.title || course.courseName || 'Untitled'}</td>
+                          <td className="px-6 py-4 text-gray-300">{course.instructor || 'N/A'}</td>
+                          <td className="px-6 py-4 text-gray-300">{course.category || 'N/A'}</td>
+                          <td className="px-6 py-4 text-gray-300">{course.lessonCount || course.totalLectures || 0}</td>
                           <td className="px-6 py-4 text-white">
-                            {course.pricingType === 'free' ? (
+                            {course.pricingType === 'free' || !course.pricingType ? (
                               <span className="text-green-400">Free</span>
                             ) : (
-                              `$${course.price?.toFixed(2)}`
+                              `$${parseFloat(course.price || 0).toFixed(2)}`
                             )}
                           </td>
                           <td className="px-6 py-4 text-white">{course.totalEnrolled || 0}</td>
-                          <td className="px-6 py-4 space-x-3">
+                          <td className="px-6 py-4 space-x-2 flex flex-wrap gap-2">
+                            <button
+                              onClick={() => navigate(`/admin/courses/${course.id}`)}
+                              className="text-green-400 hover:text-green-300 text-sm font-medium transition"
+                              title="Manage lessons and content for this course"
+                            >
+                              Manage
+                            </button>
                             <button
                               onClick={() => navigate(`/admin/courses/edit/${course.id}`, { state: { course } })}
                               className="text-blue-400 hover:text-blue-300 text-sm font-medium transition"
@@ -162,7 +169,7 @@ const AdminCourses = () => {
                               Edit
                             </button>
                             <button
-                              onClick={() => handleDeleteCourse(course.id, course.imageUrl)}
+                              onClick={() => handleDeleteCourse(course.id)}
                               className="text-red-400 hover:text-red-300 text-sm font-medium transition"
                             >
                               Delete

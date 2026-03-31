@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import LectureBuilder from '../components/admin/LectureBuilder';
-import { addCourse, updateCourseAdmin, getCourseForAdmin } from '../services/adminService';
-import { uploadFile } from '../services/storageService';
+import { createCourse, updateCourse, getCourseById, bulkCreateLessons } from '../services/adminCourseService';
+import { uploadAvatar } from '../services/storageService';
 
 /**
- * Enhanced Admin Course Form
- * Create and edit courses with nested lectures and chapters
+ * Admin Course Form
+ * Create and edit courses
+ * Lessons are managed separately via the CourseManage page
  */
 const AdminCourseForm = () => {
   const navigate = useNavigate();
@@ -19,9 +19,12 @@ const AdminCourseForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [newLessonTitle, setNewLessonTitle] = useState('');
+  const [newLessonContent, setNewLessonContent] = useState('');
 
   const [formData, setFormData] = useState({
-    courseName: '',
+    title: '',
+    description: '',
     instructor: '',
     category: '',
     rating: 0,
@@ -29,7 +32,7 @@ const AdminCourseForm = () => {
     price: 0,
     imageFile: null,
     imageUrl: '',
-    lectures: [],
+    lessons: [],
   });
 
   // Load existing course if editing
@@ -37,10 +40,11 @@ const AdminCourseForm = () => {
     if (isEditing) {
       const loadCourse = async () => {
         try {
-          const course = await getCourseForAdmin(courseId);
+          const course = await getCourseById(courseId);
           if (course) {
             setFormData({
-              courseName: course.courseName || '',
+              title: course.title || '',
+              description: course.description || '',
               instructor: course.instructor || '',
               category: course.category || '',
               rating: course.rating || 0,
@@ -48,13 +52,13 @@ const AdminCourseForm = () => {
               price: course.price || 0,
               imageFile: null,
               imageUrl: course.imageUrl || '',
-              lectures: course.lectures || [],
             });
             if (course.imageUrl) {
               setImagePreview(course.imageUrl);
             }
           }
         } catch (err) {
+          console.error('Error loading course:', err);
           setError('Failed to load course');
         } finally {
           setLoading(false);
@@ -87,13 +91,39 @@ const AdminCourseForm = () => {
     }
   };
 
-  const handleLecturesUpdate = (lectures) => {
-    setFormData((prev) => ({ ...prev, lectures }));
+  const addLesson = () => {
+    if (!newLessonTitle.trim()) {
+      setError('Lesson title is required');
+      return;
+    }
+    
+    const newLesson = {
+      id: `lesson-${Date.now()}`,
+      title: newLessonTitle.trim(),
+      content: newLessonContent.trim(),
+      order: formData.lessons.length,
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      lessons: [...prev.lessons, newLesson],
+    }));
+
+    setNewLessonTitle('');
+    setNewLessonContent('');
+    setError('');
+  };
+
+  const removeLesson = (lessonId) => {
+    setFormData((prev) => ({
+      ...prev,
+      lessons: prev.lessons.filter((l) => l.id !== lessonId),
+    }));
   };
 
   const validateForm = () => {
-    if (!formData.courseName.trim()) {
-      setError('Course name is required');
+    if (!formData.title.trim()) {
+      setError('Course title is required');
       return false;
     }
     if (!formData.instructor.trim()) {
@@ -117,14 +147,16 @@ const AdminCourseForm = () => {
     if (!validateForm()) return;
 
     setSubmitting(true);
+    setError('');
     try {
       let imageUrl = formData.imageUrl;
 
       // Upload image if a new one is provided
       if (formData.imageFile) {
         try {
-          imageUrl = await uploadFile(formData.imageFile, 'courses');
+          imageUrl = await uploadAvatar(courseId || `course-${Date.now()}`, formData.imageFile);
         } catch (err) {
+          console.error('Error uploading image:', err);
           setError('Failed to upload image');
           setSubmitting(false);
           return;
@@ -132,34 +164,51 @@ const AdminCourseForm = () => {
       }
 
       const courseData = {
-        courseName: formData.courseName,
+        title: formData.title,
+        description: formData.description,
         instructor: formData.instructor,
         category: formData.category,
         rating: formData.rating,
         pricingType: formData.pricingType,
         price: formData.pricingType === 'paid' ? formData.price : 0,
         imageUrl,
-        lectures: formData.lectures,
       };
 
-      let result;
+      let actualCourseId = courseId;
+
       if (isEditing) {
-        result = await updateCourseAdmin(courseId, courseData);
+        await updateCourse(courseId, courseData);
       } else {
-        result = await addCourse(courseData);
+        console.log('Creating course with data:', courseData);
+        actualCourseId = await createCourse(courseData);
+        console.log('✅ Course created with ID:', actualCourseId);
       }
 
-      if (result.success) {
-        setSuccess(`Course ${isEditing ? 'updated' : 'created'} successfully!`);
-        setTimeout(() => {
-          navigate('/admin/courses');
-        }, 1500);
-      } else {
-        setError(result.error || 'Failed to save course');
+      // Create lessons if any were added (only for new courses)
+      if (!isEditing && formData.lessons && formData.lessons.length > 0) {
+        try {
+          const lessonsToCreate = formData.lessons.map((lesson) => ({
+            title: lesson.title,
+            content: lesson.content,
+          }));
+          console.log('📚 Creating lessons:', lessonsToCreate);
+          const lessonIds = await bulkCreateLessons(actualCourseId, lessonsToCreate);
+          console.log('✅ Lessons created with IDs:', lessonIds);
+        } catch (lessonErr) {
+          console.error('❌ Error creating lessons:', lessonErr);
+          setError(`Course created but lessons failed: ${lessonErr.message}`);
+          setSubmitting(false);
+          return;
+        }
       }
+
+      setSuccess(`Course ${isEditing ? 'updated' : 'created'} successfully!`);
+      setTimeout(() => {
+        navigate('/admin/courses');
+      }, 1500);
     } catch (err) {
-      setError('An error occurred while saving the course');
-      console.error(err);
+      console.error('Error saving course:', err);
+      setError(err.message || 'Failed to save course');
     } finally {
       setSubmitting(false);
     }
@@ -208,13 +257,25 @@ const AdminCourseForm = () => {
             <h2 className="text-xl font-bold text-white mb-4">Basic Information</h2>
 
             <div>
-              <label className="block text-gray-300 text-sm font-semibold mb-2">Course Name</label>
+              <label className="block text-gray-300 text-sm font-semibold mb-2">Course Title</label>
               <input
                 type="text"
-                name="courseName"
-                value={formData.courseName}
+                name="title"
+                value={formData.title}
                 onChange={handleInputChange}
                 placeholder="e.g., Introduction to React"
+                className="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-red-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-semibold mb-2">Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Course description"
+                rows="3"
                 className="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-red-500 outline-none"
               />
             </div>
@@ -320,30 +381,78 @@ const AdminCourseForm = () => {
             <p className="text-xs text-gray-400 mt-2">Recommended: 1200x600px</p>
           </div>
 
-          {/* Lectures & Chapters */}
+          {/* Lessons Management */}
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Course Content</h2>
-            <LectureBuilder lectures={formData.lectures} onUpdate={handleLecturesUpdate} />
-          </div>
+            <h2 className="text-xl font-bold text-white mb-4">📚 Course Lessons</h2>
+            <p className="text-gray-400 text-sm mb-4">
+              Add lessons directly here. They will be created with the course.
+            </p>
 
-          {/* Summary */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Summary</h2>
-            <div className="space-y-2 text-gray-300">
-              <p>
-                <span className="font-semibold">Total Lectures:</span> {formData.lectures.length}
-              </p>
-              <p>
-                <span className="font-semibold">Total Duration:</span>{' '}
-                {formData.lectures.reduce((sum, lecture) => {
-                  return (
-                    sum +
-                    lecture.chapters.reduce((chapterSum, chapter) => chapterSum + (chapter.duration || 0), 0)
-                  );
-                }, 0)}{' '}
-                minutes
-              </p>
+            {/* Add Lesson Form */}
+            <div className="bg-gray-700 rounded-lg p-4 mb-6 space-y-3">
+              <div>
+                <label className="block text-gray-300 text-sm font-semibold mb-2">Lesson Title</label>
+                <input
+                  type="text"
+                  value={newLessonTitle}
+                  onChange={(e) => setNewLessonTitle(e.target.value)}
+                  placeholder="e.g., Introduction to Components"
+                  className="w-full bg-gray-600 text-white px-4 py-2 rounded border border-gray-500 focus:border-red-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 text-sm font-semibold mb-2">Lesson Content (Optional)</label>
+                <textarea
+                  value={newLessonContent}
+                  onChange={(e) => setNewLessonContent(e.target.value)}
+                  placeholder="Lesson notes or description..."
+                  rows="2"
+                  className="w-full bg-gray-600 text-white px-4 py-2 rounded border border-gray-500 focus:border-red-500 outline-none resize-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={addLesson}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition"
+              >
+                + Add Lesson
+              </button>
             </div>
+
+            {/* Lessons List */}
+            {formData.lessons.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <p>No lessons added yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-gray-300 text-sm font-semibold mb-3">
+                  {formData.lessons.length} {formData.lessons.length === 1 ? 'Lesson' : 'Lessons'}
+                </p>
+                {formData.lessons.map((lesson, index) => (
+                  <div key={lesson.id} className="bg-gray-700 rounded p-3 flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium text-gray-400">#{index + 1}</span>
+                        <h3 className="text-white font-medium">{lesson.title}</h3>
+                      </div>
+                      {lesson.content && (
+                        <p className="text-gray-400 text-sm line-clamp-1">{lesson.content}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeLesson(lesson.id)}
+                      className="ml-2 text-red-400 hover:text-red-300 text-sm font-medium transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Form Actions */}

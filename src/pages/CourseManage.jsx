@@ -1,6 +1,6 @@
 // src/pages/CourseManage.jsx
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAdminCourse } from '../hooks/useAdminCourses';
 import { useAdminLessons } from '../hooks/useAdminLessons';
 import CourseForm from '../components/admin/CourseForm';
