@@ -4,6 +4,13 @@ import StatsCard from '../components/admin/StatsCard';
 import CourseAnalyticsTable from '../components/admin/CourseAnalyticsTable';
 import { getAllCoursesAdmin } from '../services/adminCourseService';
 import { getAllEnrollments } from '../services/adminService';
+import {
+  approveStudent,
+  assignSubjectToStudent,
+  getAllPendingRequests,
+  setLessonRequestStatus,
+} from '../services/firestoreService';
+import { Link } from 'react-router-dom';
 
 /**
  * Admin Dashboard Page
@@ -17,10 +24,14 @@ const AdminDashboard = () => {
     enrollmentsLast7Days: 0,
   });
   const [courses, setCourses] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [processingRequestId, setProcessingRequestId] = useState('');
 
   useEffect(() => {
+    let unsubscribeRequests = null;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -74,8 +85,39 @@ const AdminDashboard = () => {
       }
     };
 
+    unsubscribeRequests = getAllPendingRequests((requests) => {
+      setPendingRequests(requests || []);
+    });
+
     fetchData();
+
+    return () => {
+      if (unsubscribeRequests) unsubscribeRequests();
+    };
   }, []);
+
+  const handleAcceptRequest = async (request) => {
+    if (!request?.requestId || !request?.studentId || !request?.courseId) return;
+
+    try {
+      setProcessingRequestId(request.requestId);
+
+      // Ensure student is approved before mapping subject.
+      await approveStudent(request.studentId);
+
+      await assignSubjectToStudent(request.studentId, {
+        courseId: request.courseId,
+        courseTitle: request.courseTitle || 'Untitled Subject',
+      });
+
+      await setLessonRequestStatus(request.requestId, 'approved');
+    } catch (err) {
+      console.error('Failed to accept student request:', err);
+      setError(err.message || 'Failed to accept request');
+    } finally {
+      setProcessingRequestId('');
+    }
+  };
 
 
   return (
@@ -138,6 +180,54 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
                     <p className="text-gray-400">No courses found</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Student Requests (visible on main admin dashboard) */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">
+                    Student Requests ({pendingRequests.length})
+                  </h2>
+                  <Link
+                    to="/admin/assignments"
+                    className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                  >
+                    Open Assignment Board
+                  </Link>
+                </div>
+
+                {pendingRequests.length === 0 ? (
+                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+                    <p className="text-gray-400">No pending student requests</p>
+                  </div>
+                ) : (
+                  <div className="bg-gray-800 border border-gray-700 rounded-lg divide-y divide-gray-700">
+                    {pendingRequests.slice(0, 8).map((request) => (
+                      <div
+                        key={request.requestId}
+                        className="px-5 py-4 flex items-center justify-between gap-4"
+                      >
+                        <div>
+                          <p className="text-white font-medium">
+                            {request.courseTitle || 'Untitled Subject'}
+                          </p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            {request.studentName || request.studentEmail} requested access
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleAcceptRequest(request)}
+                          disabled={processingRequestId === request.requestId}
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-green-600 text-white hover:bg-green-500 disabled:opacity-60"
+                        >
+                          {processingRequestId === request.requestId
+                            ? 'Accepting...'
+                            : 'Accept'}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

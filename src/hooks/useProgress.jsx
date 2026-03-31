@@ -1,9 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getProgress, toggleLessonComplete, updateProgress } from '../services/firestoreService';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import {
+  getOrCreateProgress,
+  getProgressDocId,
+  toggleLessonComplete,
+} from '../services/firestoreService';
 
 /**
  * Hook for managing course progress tracking
- * Storage: /users/{userId}/progress/{courseId}
+ * Storage: /progress/{userId}_{courseId}
  * 
  * @param {string} userId - The user's UID
  * @param {string} courseId - The course ID
@@ -23,22 +29,49 @@ export const useProgress = (userId, courseId) => {
   }, []);
 
   useEffect(() => {
-    const fetchProgress = async () => {
+    if (!userId || !courseId) {
+      setProgress({ completedLessons: [] });
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    let unsubscribe = null;
+
+    const setupProgress = async () => {
       if (!userId || !courseId) {
-        setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
         setError(null);
-        console.log(`Fetching progress for user: ${userId}, course: ${courseId}`);
-        const data = await getProgress(userId, courseId);
-        console.log('Progress data fetched:', data);
-        
-        if (isMountedRef.current) {
-          setProgress(data || { completedLessons: [] });
-        }
+
+        await getOrCreateProgress(userId, courseId);
+
+        const progressId = getProgressDocId(userId, courseId);
+        const progressRef = doc(db, 'progress', progressId);
+        unsubscribe = onSnapshot(
+          progressRef,
+          (snapshot) => {
+            if (!isMountedRef.current) return;
+
+            if (snapshot.exists()) {
+              setProgress(snapshot.data());
+            } else {
+              setProgress({ userId, courseId, completedLessons: [] });
+            }
+            setLoading(false);
+          },
+          (snapshotError) => {
+            console.error('Error subscribing to progress:', snapshotError);
+            if (isMountedRef.current) {
+              setError(snapshotError.message);
+              setProgress({ completedLessons: [] });
+              setLoading(false);
+            }
+          },
+        );
       } catch (err) {
         console.error('Error fetching progress:', err);
         if (isMountedRef.current) {
@@ -52,7 +85,11 @@ export const useProgress = (userId, courseId) => {
       }
     };
 
-    fetchProgress();
+    setupProgress();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [userId, courseId]);
 
   const toggleLesson = useCallback(
@@ -65,15 +102,6 @@ export const useProgress = (userId, courseId) => {
       try {
         console.log(`Toggling lesson ${lessonId} for user ${userId} in course ${courseId}`);
         const newCompleted = await toggleLessonComplete(userId, courseId, lessonId);
-        
-        if (isMountedRef.current) {
-          console.log('Updated completed lessons:', newCompleted);
-          setProgress((prev) => ({ 
-            ...prev, 
-            completedLessons: newCompleted,
-            updatedAt: new Date(),
-          }));
-        }
         return newCompleted;
       } catch (err) {
         console.error('Error toggling lesson:', err);
@@ -103,7 +131,7 @@ export const useProgress = (userId, courseId) => {
       
       try {
         console.log('Refreshing progress...');
-        const data = await getProgress(userId, courseId);
+        const data = await getOrCreateProgress(userId, courseId);
         if (isMountedRef.current) {
           setProgress(data || { completedLessons: [] });
         }

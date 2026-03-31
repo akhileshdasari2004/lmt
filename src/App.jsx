@@ -1,97 +1,104 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { AdminAuthProvider, useAdminAuth } from './hooks/useAdminAuth';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Course from './pages/Course';
+import ProfilePage from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboardNew from './pages/AdminDashboardNew';
+import AdminCoursesPage from './pages/AdminCoursesPage';
+import AdminBookingsPage from './pages/AdminBookingsPage';
+import AdminCourseForm from './pages/AdminCourseForm';
+import AdminManagement from './pages/AdminManagement';
+import CourseManage from './pages/CourseManage';
 import AdminLogin from './pages/AdminLogin';
 import AdminSignup from './pages/AdminSignup';
 import AdminSetup from './pages/AdminSetup';
 import QuickAdminSetup from './pages/QuickAdminSetup';
 import GrantAdminAccess from './pages/GrantAdminAccess';
-import Dashboard from './pages/Dashboard';
-import Course from './pages/Course';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminManagement from './pages/AdminManagement';
-import CourseManage from './pages/CourseManage';
-import AdminDashboardNew from './pages/AdminDashboardNew';
-import AdminCoursesPage from './pages/AdminCoursesPage';
-import AdminBookingsPage from './pages/AdminBookingsPage';
-import AdminCourseForm from './pages/AdminCourseForm';
+import PendingApproval from './pages/PendingApproval';
 import Navbar from './components/Navbar';
 import AdminNavbar from './components/admin/AdminNavbar';
 import './index.css';
 
-// ===== STUDENT AUTH ROUTES =====
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
-// Protected Route component for students
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-
+const RootRedirect = () => {
+  const { user, loading } = useAuth();
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (user.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+  if (user.role === 'student' && user.status === 'approved') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <Navigate to="/pending" replace />;
 };
 
-// Layout with Navbar for protected student routes
-const ProtectedLayout = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <Outlet />
-    </div>
-  );
+const StudentProtectedRoute = ({ children, allowedStatus = 'approved' }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+
+  if (!user) return <Navigate to="/" replace />;
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (allowedStatus && user?.status !== allowedStatus) {
+    return <Navigate to={user.status === 'approved' ? '/dashboard' : '/pending'} replace />;
+  }
+
+  return children;
 };
 
-// Public Route component - redirects to dashboard if authenticated
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+const StudentLayout = () => (
+  <div className="min-h-screen bg-gray-50">
+    <Navbar />
+    <Outlet />
+  </div>
+);
 
-  // Show login page while loading (faster perceived performance)
-  // Only redirect if definitively authenticated
-  return isAuthenticated && !loading ? <Navigate to="/dashboard" replace /> : children;
+const AdminLayout = () => (
+  <div className="min-h-screen bg-gray-900">
+    <AdminNavbar />
+    <Outlet />
+  </div>
+);
+
+const LoginRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (user) {
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    return <Navigate to={user.status === 'approved' ? '/dashboard' : '/pending'} replace />;
+  }
+  return children;
 };
 
-// ===== ADMIN AUTH ROUTES =====
-
-// Protected Route component for admins
 const AdminProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAdminAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingScreen />;
   return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
 };
 
-// Layout with Admin Navbar for protected admin routes
-const AdminProtectedLayout = () => {
-  return (
-    <div className="min-h-screen bg-gray-900">
-      <AdminNavbar />
-      <Outlet />
-    </div>
-  );
-};
-
-// Public Admin Route - redirects to admin dashboard if authenticated
 const AdminPublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAdminAuth();
-
-  // Show login page while loading (faster perceived performance)
-  // Only redirect if definitively authenticated
-  return isAuthenticated && !loading ? <Navigate to="/admin" replace /> : children;
+  if (loading) return <LoadingScreen />;
+  if (isAuthenticated) return <Navigate to="/admin" replace />;
+  return children;
 };
 
 function App() {
@@ -100,39 +107,52 @@ function App() {
       <AdminAuthProvider>
         <Router>
           <Routes>
-            {/* ===== STUDENT ROUTES ===== */}
-            <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
-            
-            <Route element={<ProtectedRoute><ProtectedLayout /></ProtectedRoute>}>
+            {/* Student routes */}
+            <Route path="/" element={<LoginRoute><Login /></LoginRoute>} />
+
+            <Route
+              path="/pending"
+              element={
+                <StudentProtectedRoute allowedStatus="pending">
+                  <PendingApproval />
+                </StudentProtectedRoute>
+              }
+            />
+
+            <Route
+              element={
+                <StudentProtectedRoute allowedStatus="approved">
+                  <StudentLayout />
+                </StudentProtectedRoute>
+              }
+            >
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/course/:id" element={<Course />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
-            {/* ===== ADMIN ROUTES ===== */}
+            {/* Admin auth routes restored */}
             <Route path="/admin/setup" element={<AdminSetup />} />
             <Route path="/admin/quick-setup" element={<QuickAdminSetup />} />
             <Route path="/admin/grant-access" element={<GrantAdminAccess />} />
             <Route path="/admin/login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
             <Route path="/admin/signup" element={<AdminPublicRoute><AdminSignup /></AdminPublicRoute>} />
-            
-            <Route element={<AdminProtectedRoute><AdminProtectedLayout /></AdminProtectedRoute>}>
-              {/* New Admin Panel - Main Dashboard */}
+
+            {/* Admin protected routes restored + new assignments route */}
+            <Route element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
               <Route path="/admin" element={<AdminDashboardNew />} />
               <Route path="/admin/dashboard" element={<AdminDashboardNew />} />
-              
-              {/* New Admin Panel Routes */}
               <Route path="/admin/courses" element={<AdminCoursesPage />} />
               <Route path="/admin/courses/new" element={<AdminCourseForm />} />
               <Route path="/admin/courses/edit/:courseId" element={<AdminCourseForm />} />
               <Route path="/admin/bookings" element={<AdminBookingsPage />} />
-              
-              {/* Legacy routes for backward compatibility */}
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/courses/:id" element={<CourseManage />} />
+
+              {/* Newly developed feature preserved */}
+              <Route path="/admin/assignments" element={<AdminDashboard />} />
             </Route>
 
-            {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

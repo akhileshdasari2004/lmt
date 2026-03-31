@@ -24,7 +24,7 @@ const Login = () => {
       } else {
         await logIn(email, password);
       }
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -207,7 +207,14 @@ const Login = () => {
                 to="/admin/login"
                 className="font-semibold text-brand-500 hover:text-brand-600"
               >
-                Go to admin login
+                Admin Login
+              </Link>
+              {' '}|{' '}
+              <Link
+                to="/admin/signup"
+                className="font-semibold text-brand-500 hover:text-brand-600"
+              >
+                Admin Signup
               </Link>
             </p>
           </div>

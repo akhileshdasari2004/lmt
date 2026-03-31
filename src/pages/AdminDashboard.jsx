@@ -1,119 +1,213 @@
-// src/pages/AdminDashboard.jsx
-import { useState } from 'react';
-import { useAdminCourses } from '../hooks/useAdminCourses';
-import CourseForm from '../components/admin/CourseForm';
-import CourseList from '../components/admin/CourseList';
+import { useEffect, useMemo, useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import {
+  approveStudent,
+  assignSubjectToStudent,
+  getAllPendingRequests,
+  getAllStudents,
+  getStudentAssignments,
+  setLessonRequestStatus,
+} from '../services/firestoreService';
 
 const AdminDashboard = () => {
-  const { courses, loading, error, addCourse, editCourse, removeCourse } =
-    useAdminCourses();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingCourse, setEditingCourse] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [assignedLessons, setAssignedLessons] = useState([]);
+  const [loadingAssign, setLoadingAssign] = useState(false);
+  const [error, setError] = useState('');
 
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+  useEffect(() => {
+    const unsubStudents = getAllStudents(setStudents);
+    const unsubRequests = getAllPendingRequests(setRequests);
+    return () => {
+      if (unsubStudents) unsubStudents();
+      if (unsubRequests) unsubRequests();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedStudent?.uid) {
+      setAssignedLessons([]);
+      return;
+    }
+    const unsub = getStudentAssignments(selectedStudent.uid, setAssignedLessons);
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [selectedStudent?.uid]);
+
+  const pendingStudents = useMemo(
+    () => students.filter((s) => s.status === 'pending'),
+    [students],
+  );
+
+  const selectedRequests = useMemo(() => {
+    if (!selectedStudent?.uid) return [];
+    return requests.filter((r) => r.studentId === selectedStudent.uid);
+  }, [requests, selectedStudent?.uid]);
+
+  const handleApproveStudent = async (studentId) => {
+    try {
+      await approveStudent(studentId);
+    } catch (err) {
+      setError(err.message || 'Failed to approve student');
+    }
   };
 
-  const handleCreateCourse = async (courseData) => {
-    const result = await addCourse(courseData);
-    if (result.success) {
-      showNotification('Course created successfully!');
-      setShowCreateForm(false);
-    } else {
-      showNotification(result.error, 'error');
-    }
-    return result;
-  };
+  const handleDragEnd = async (result) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId) return;
+    if (destination.droppableId !== 'assignments') return;
+    if (!selectedStudent?.uid) return;
 
-  const handleEditCourse = async (courseData) => {
-    if (!editingCourse) return { success: false };
-    const result = await editCourse(editingCourse.id, courseData);
-    if (result.success) {
-      showNotification('Course updated successfully!');
-      setEditingCourse(null);
-    } else {
-      showNotification(result.error, 'error');
-    }
-    return result;
-  };
+    const req = selectedRequests.find((r) => r.requestId === draggableId);
+    if (!req) return;
 
-  const handleDeleteCourse = async (courseId) => {
-    const result = await removeCourse(courseId);
-    if (result.success) {
-      showNotification('Course deleted successfully!');
-    } else {
-      showNotification(result.error, 'error');
+    try {
+      setLoadingAssign(true);
+      await assignSubjectToStudent(selectedStudent.uid, {
+        courseId: req.courseId,
+        courseTitle: req.courseTitle,
+      });
+      await setLessonRequestStatus(req.requestId, 'approved');
+    } catch (err) {
+      setError(err.message || 'Failed to assign lesson');
+    } finally {
+      setLoadingAssign(false);
     }
-    return result;
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-sm text-gray-400 mt-1">Manage courses and lessons</p>
-          </div>
-          <div className="flex gap-3">
-            {!showCreateForm && !editingCourse && (
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium"
-              >
-                + New Course
-              </button>
-            )}
-          </div>
+    <div className="min-h-screen bg-surface text-text-primary px-4 md:px-8 lg:px-12 py-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <p className="text-sm text-text-secondary">
+            Approve students and assign requested subjects.
+          </p>
         </div>
 
-        {/* Notification */}
-        {notification && (
-          <div
-            className={`mb-4 p-4 rounded-md ${
-              notification.type === 'error'
-                ? 'bg-red-900 bg-opacity-50 border border-red-700 text-red-200'
-                : 'bg-green-900 bg-opacity-50 border border-green-700 text-green-200'
-            }`}
-          >
-            {notification.message}
-          </div>
-        )}
-
-        {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 bg-red-900 bg-opacity-50 border border-red-700 rounded-md text-red-200">
-            Error: {error}
+          <div className="mb-4 p-3 rounded-xl border border-danger/40 bg-danger/10 text-danger text-sm">
+            {error}
           </div>
         )}
 
-        {/* Create/Edit Form */}
-        {(showCreateForm || editingCourse) && (
-          <div className="mb-6">
-            <CourseForm
-              onSubmit={editingCourse ? handleEditCourse : handleCreateCourse}
-              initialData={editingCourse}
-              onCancel={() => {
-                setShowCreateForm(false);
-                setEditingCourse(null);
-              }}
-            />
-          </div>
-        )}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left panel - Students */}
+            <div className="bg-surface-card border border-surface-border rounded-2xl p-4">
+              <h2 className="font-semibold mb-3">Pending Students</h2>
+              <div className="space-y-2">
+                {pendingStudents.length === 0 ? (
+                  <p className="text-sm text-text-secondary">No pending students.</p>
+                ) : (
+                  pendingStudents.map((student) => (
+                    <div
+                      key={student.uid}
+                      className={`rounded-xl border p-3 cursor-pointer ${
+                        selectedStudent?.uid === student.uid
+                          ? 'border-brand-500 bg-brand-500/10'
+                          : 'border-surface-border'
+                      }`}
+                      onClick={() => setSelectedStudent(student)}
+                    >
+                      <p className="text-sm font-medium">{student.name || student.email}</p>
+                      <p className="text-xs text-text-muted">{student.email}</p>
+                      <button
+                        className="mt-2 rounded-lg bg-success/20 text-success px-3 py-1 text-xs font-semibold"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApproveStudent(student.uid);
+                        }}
+                      >
+                        Approve
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
 
-        {/* Course List */}
-        <div>
-          <h2 className="text-lg font-semibold text-white mb-4">All Courses</h2>
-          <CourseList
-            courses={courses}
-            onEdit={setEditingCourse}
-            onDelete={handleDeleteCourse}
-            loading={loading}
-          />
-        </div>
+            {/* Center panel - requests */}
+            <Droppable droppableId="requests">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="bg-surface-card border border-surface-border rounded-2xl p-4"
+                >
+                  <h2 className="font-semibold mb-3">
+                    Requests {selectedStudent ? `for ${selectedStudent.name || selectedStudent.email}` : ''}
+                  </h2>
+                  <div className="space-y-2 min-h-[200px]">
+                    {!selectedStudent ? (
+                      <p className="text-sm text-text-secondary">Select a student first.</p>
+                    ) : selectedRequests.length === 0 ? (
+                      <p className="text-sm text-text-secondary">No pending requests.</p>
+                    ) : (
+                      selectedRequests.map((req, index) => (
+                        <Draggable key={req.requestId} draggableId={req.requestId} index={index}>
+                          {(dragProvided) => (
+                            <div
+                              ref={dragProvided.innerRef}
+                              {...dragProvided.draggableProps}
+                              {...dragProvided.dragHandleProps}
+                              className="rounded-lg bg-surface border border-surface-border px-3 py-2"
+                            >
+                              <p className="text-sm font-medium">{req.courseTitle}</p>
+                              <p className="text-xs text-text-muted">Subject request</p>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
+                </div>
+              )}
+            </Droppable>
+
+            {/* Right panel - assignments */}
+            <Droppable droppableId="assignments">
+              {(provided, snapshot) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={`bg-surface-card border rounded-2xl p-4 ${
+                    snapshot.isDraggingOver ? 'border-brand-500 bg-brand-500/10' : 'border-surface-border'
+                  }`}
+                >
+                  <h2 className="font-semibold mb-3">Assignments</h2>
+                  <p className="text-xs text-text-muted mb-3">Drop subjects here to assign.</p>
+                  <div className="space-y-2 min-h-[200px]">
+                    {assignedLessons.length === 0 ? (
+                      <p className="text-sm text-text-secondary">No assignments yet.</p>
+                    ) : (
+                      assignedLessons.map((lesson) => (
+                        <div
+                          key={`${lesson.courseId}:${lesson.lessonId}`}
+                          className="rounded-lg border border-surface-border bg-surface px-3 py-2"
+                        >
+                          <p className="text-sm font-medium">{lesson.courseTitle}</p>
+                          <p className="text-xs text-text-muted">
+                            {lesson.assignmentType === 'subject' ? 'Full subject' : 'Lesson'}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                    {loadingAssign && (
+                      <p className="text-xs text-brand-500">Assigning lesson...</p>
+                    )}
+                    {provided.placeholder}
+                  </div>
+                </div>
+              )}
+            </Droppable>
+          </div>
+        </DragDropContext>
       </div>
     </div>
   );

@@ -6,6 +6,12 @@ import {
   collection,
   getDocs,
   updateDoc,
+  arrayUnion,
+  arrayRemove,
+  onSnapshot,
+  query,
+  where,
+  serverTimestamp,
 } from "firebase/firestore";
 
 // User operations
@@ -69,6 +75,169 @@ export const getUserRole = async (userId) => {
   const role = user?.role || "student";
   console.log("Determined role:", role);
   return role;
+};
+
+export const initializeNewUser = async (userId, email, name) => {
+  try {
+    await setDoc(
+      doc(db, "users", userId),
+      {
+        uid: userId,
+        email,
+        name: name || "",
+        role: "student",
+        status: "pending",
+        requestedAt: serverTimestamp(),
+        approvedAt: null,
+      },
+      { merge: true },
+    );
+  } catch (err) {
+    console.error("Error initializing new user:", err);
+    throw err;
+  }
+};
+
+// Lesson request & assignment operations
+export const createLessonRequest = async (
+  studentId,
+  studentEmail,
+  studentName,
+  courseId,
+  courseTitle,
+  lessonId,
+  lessonTitle,
+) => {
+  const ref = doc(collection(db, "lessonRequests"));
+  await setDoc(ref, {
+    requestId: ref.id,
+    studentId,
+    studentEmail,
+    studentName,
+    courseId,
+    courseTitle,
+    lessonId,
+    lessonTitle,
+    status: "pending",
+    requestedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+export const createSubjectRequest = async (
+  studentId,
+  studentEmail,
+  studentName,
+  courseId,
+  courseTitle,
+) => {
+  const ref = doc(collection(db, "lessonRequests"));
+  await setDoc(ref, {
+    requestId: ref.id,
+    studentId,
+    studentEmail,
+    studentName,
+    courseId,
+    courseTitle,
+    lessonId: null,
+    lessonTitle: null,
+    requestType: "subject",
+    status: "pending",
+    requestedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+export const assignLessonToStudent = async (studentId, lessonData) => {
+  const ref = doc(db, "assignments", studentId);
+  await setDoc(
+    ref,
+    {
+      studentId,
+      assignedLessons: arrayUnion({
+        ...lessonData,
+        assignedAt: new Date().toISOString(),
+      }),
+    },
+    { merge: true },
+  );
+};
+
+export const assignSubjectToStudent = async (studentId, courseData) => {
+  const ref = doc(db, "assignments", studentId);
+  await setDoc(
+    ref,
+    {
+      studentId,
+      assignedLessons: arrayUnion({
+        courseId: courseData.courseId,
+        courseTitle: courseData.courseTitle,
+        lessonId: null,
+        lessonTitle: null,
+        assignmentType: "subject",
+        assignedAt: new Date().toISOString(),
+      }),
+    },
+    { merge: true },
+  );
+};
+
+export const revokeLessonAssignment = async (studentId, lessonData) => {
+  const ref = doc(db, "assignments", studentId);
+  await updateDoc(ref, {
+    assignedLessons: arrayRemove(lessonData),
+  });
+};
+
+export const approveStudent = async (studentId) => {
+  const ref = doc(db, "users", studentId);
+  await updateDoc(ref, {
+    status: "approved",
+    approvedAt: serverTimestamp(),
+  });
+};
+
+export const getAllStudents = (callback) => {
+  const q = query(collection(db, "users"), where("role", "==", "student"));
+  return onSnapshot(q, (snap) => {
+    callback(
+      snap.docs.map((d) => ({
+        uid: d.id,
+        ...d.data(),
+      })),
+    );
+  });
+};
+
+export const getStudentRequests = (studentId, callback) => {
+  const q = query(
+    collection(db, "lessonRequests"),
+    where("studentId", "==", studentId),
+  );
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => d.data()));
+  });
+};
+
+export const getAllPendingRequests = (callback) => {
+  const q = query(
+    collection(db, "lessonRequests"),
+    where("status", "==", "pending"),
+  );
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => d.data()));
+  });
+};
+
+export const setLessonRequestStatus = async (requestId, status) => {
+  await updateDoc(doc(db, "lessonRequests", requestId), { status });
+};
+
+export const getStudentAssignments = (studentId, callback) => {
+  const ref = doc(db, "assignments", studentId);
+  return onSnapshot(ref, (snap) => {
+    callback(snap.exists() ? snap.data().assignedLessons || [] : []);
+  });
 };
 
 // Course operations
@@ -162,48 +331,60 @@ export const getCourse = async (courseId) => {
 };
 
 // Progress operations
-// Storage: /users/{userId}/progress/{courseId}
-export const getProgress = async (userId, courseId) => {
-  try {
-    console.log(`📊 Fetching progress: user=${userId}, course=${courseId}`);
+// Storage: /progress/{userId}_{courseId}
+export const getProgressDocId = (userId, courseId) => `${userId}_${courseId}`;
 
+export const getOrCreateProgress = async (userId, courseId) => {
+  try {
     if (!userId || !courseId) {
-      console.warn("⚠️ Missing userId or courseId");
-      return { courseId, completedLessons: [] };
+      return { userId, courseId, completedLessons: [] };
     }
 
-    const progressDocRef = doc(db, "users", userId, "progress", courseId);
+    const progressId = getProgressDocId(userId, courseId);
+    const progressDocRef = doc(db, "progress", progressId);
     const docSnap = await getDoc(progressDocRef);
 
     if (docSnap.exists()) {
-      console.log("✅ Progress found:", docSnap.data());
       return docSnap.data();
-    } else {
-      console.log("ℹ️ No progress yet, initializing with empty array");
-      // Initialize new progress document
-      const initialProgress = {
-        courseId,
-        completedLessons: [],
-        createdAt: new Date(),
-      };
-      await setDoc(progressDocRef, initialProgress);
-      return initialProgress;
     }
+
+    const initialProgress = {
+      userId,
+      courseId,
+      completedLessons: [],
+    };
+
+    await setDoc(progressDocRef, initialProgress, { merge: false });
+    return initialProgress;
   } catch (err) {
-    console.error("❌ Error fetching progress:", err.message);
+    console.error("Error in getOrCreateProgress:", err);
+    throw err;
+  }
+};
+
+export const getProgress = async (userId, courseId) => {
+  try {
+    if (!userId || !courseId) {
+      return { userId, courseId, completedLessons: [] };
+    }
+
+    return await getOrCreateProgress(userId, courseId);
+  } catch (err) {
+    console.error("Error fetching progress:", err.message);
     throw err;
   }
 };
 
 export const updateProgress = async (userId, courseId, completedLessons) => {
   try {
-    const progressDocRef = doc(db, "users", userId, "progress", courseId);
+    const progressId = getProgressDocId(userId, courseId);
+    const progressDocRef = doc(db, "progress", progressId);
     await setDoc(
       progressDocRef,
       {
+        userId,
         courseId,
         completedLessons,
-        updatedAt: new Date(),
       },
       { merge: true },
     );
@@ -215,14 +396,22 @@ export const updateProgress = async (userId, courseId, completedLessons) => {
 
 export const toggleLessonComplete = async (userId, courseId, lessonId) => {
   try {
-    const progress = await getProgress(userId, courseId);
+    const progress = await getOrCreateProgress(userId, courseId);
     const completedLessons = progress.completedLessons || [];
+    const progressId = getProgressDocId(userId, courseId);
+    const progressDocRef = doc(db, "progress", progressId);
 
-    const newCompleted = completedLessons.includes(lessonId)
-      ? completedLessons.filter((id) => id !== lessonId)
-      : [...completedLessons, lessonId];
+    if (completedLessons.includes(lessonId)) {
+      await updateDoc(progressDocRef, {
+        completedLessons: arrayRemove(lessonId),
+      });
+      return completedLessons.filter((id) => id !== lessonId);
+    }
 
-    await updateProgress(userId, courseId, newCompleted);
+    await updateDoc(progressDocRef, {
+      completedLessons: arrayUnion(lessonId),
+    });
+    const newCompleted = [...completedLessons, lessonId];
     return newCompleted;
   } catch (err) {
     console.error("Error toggling lesson:", err);

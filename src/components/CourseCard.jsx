@@ -8,7 +8,7 @@ const gradients = [
   'from-pink-500 to-fuchsia-600',
 ];
 
-const CourseCard = ({ course, progress = 0, loading = false, index = 0 }) => {
+const CourseCard = ({ course, progress = 0, loading = false, index = 0, userId }) => {
   const lessonCount = course.lessons?.length || 0;
   const gradientClass = gradients[index % gradients.length];
   const safeProgress = Number.isFinite(progress) ? Math.min(Math.max(progress, 0), 100) : 0;

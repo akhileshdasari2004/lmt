@@ -1,8 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import { useCourse } from '../hooks/useCourses';
 import { useProgress } from '../hooks/useProgress';
 import { useAuth } from '../hooks/useAuth';
 import LessonItem from '../components/LessonItem';
+import { getOrCreateProgress, getStudentAssignments } from '../services/firestoreService';
 
 const Course = () => {
   const { id } = useParams();
@@ -20,10 +23,34 @@ const Course = () => {
     loading: progressLoading,
     error: progressError,
   } = useProgress(user?.uid, id);
+  const [assignedLessons, setAssignedLessons] = useState([]);
 
   const handleGoBack = () => {
     navigate('/dashboard');
   };
+
+  useEffect(() => {
+    if (!user?.uid || !id) return;
+    getOrCreateProgress(user.uid, id).catch((err) => {
+      console.error('Error ensuring progress document exists:', err);
+    });
+  }, [user?.uid, id]);
+
+  useEffect(() => {
+    if (!user?.uid || !id) {
+      setAssignedLessons([]);
+      return;
+    }
+
+    const unsubscribe = getStudentAssignments(user.uid, (lessons) => {
+      const filtered = (lessons || []).filter((lesson) => lesson.courseId === id);
+      setAssignedLessons(filtered);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user?.uid, id]);
 
   if (!user) {
     return (
@@ -78,7 +105,16 @@ const Course = () => {
     );
   }
 
-  const lessons = course.lessons || [];
+  const hasSubjectAssignment = assignedLessons.some(
+    (lesson) => lesson.assignmentType === 'subject' || lesson.lessonId == null,
+  );
+  const lessons = hasSubjectAssignment
+    ? course.lessons || []
+    : assignedLessons.map((lesson, index) => ({
+        id: lesson.lessonId,
+        title: lesson.lessonTitle,
+        order: index,
+      }));
   const completedLessons = progress.completedLessons || [];
   const progressPercent = calculateProgress(lessons);
 
