@@ -1,11 +1,13 @@
 // src/services/storageService.js
-import { storage } from "./firebase";
+import { getStorage } from "firebase/storage";
 import {
   ref,
   uploadBytes,
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+
+const storage = getStorage();
 
 // Compress image before upload
 export const compressImage = async (

@@ -19,8 +19,9 @@ import {
   where,
   limit,
 } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
-import { storage } from "./firebase";
+import { deleteObject, ref, getStorage } from "firebase/storage";
+
+const storage = getStorage();
 
 // ============================================================================
 // COURSE OPERATIONS
